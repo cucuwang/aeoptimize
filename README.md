@@ -165,7 +165,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dexuwang627-cloud/aeoptimize/action@v0.5.2
+      - uses: dexuwang627-cloud/aeoptimize/action@v0.5.3
         with:
           path: dist
           min-score: 60

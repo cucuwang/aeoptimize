@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "AI search optimization: scan, generate, and transform website content for AI readability",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "plugins": [
     {

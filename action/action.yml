@@ -34,7 +34,7 @@ runs:
 
     - name: Install aeoptimize
       shell: bash
-      run: npm install -g aeoptimize@0.5.2
+      run: npm install -g aeoptimize@0.5.3
 
     - name: Run AEO scan
       shell: bash

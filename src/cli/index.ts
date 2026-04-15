@@ -18,7 +18,7 @@ const program = new Command();
 program
   .name('aeoptimize')
   .description('CLI toolkit that transforms SEO-optimized websites into AI-search-ready content')
-  .version('0.5.2');
+  .version('0.5.3');
 
 // ── scan command ───────────────────────────────────────────────────
 
