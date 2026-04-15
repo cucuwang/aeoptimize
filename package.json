@@ -5,6 +5,7 @@
   "type": "module",
   "main": "./dist/core/index.js",
   "bin": {
+    "aeoptimize": "./dist/cli/index.js",
     "aeo": "./dist/cli/index.js",
     "aeo-cli": "./dist/cli/index.js"
   },

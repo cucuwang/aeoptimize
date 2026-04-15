@@ -1,11 +1,26 @@
 # aeoptimize
 
 [![npm version](https://img.shields.io/npm/v/aeoptimize.svg)](https://www.npmjs.com/package/aeoptimize)
+[![CI](https://github.com/dexuwang627-cloud/aeoptimize/actions/workflows/ci.yml/badge.svg)](https://github.com/dexuwang627-cloud/aeoptimize/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/aeoptimize.svg)](https://github.com/dexuwang627-cloud/aeoptimize/blob/main/LICENSE)
 
 **CLI toolkit + Claude Code skills that transform SEO-optimized websites into AI-search-ready content.**
 
+## Why AEO?
+
+| | SEO | AEO |
+|---|---|---|
+| **Goal** | Rank higher | Get cited |
+| **Audience** | Search crawler | Language model |
+| **Key metric** | Position | Citation accuracy |
+| **Content style** | Keyword-rich | Self-contained, structured |
+| **Structured data** | Nice to have | Essential |
+
+67% of users now get their first answer from AI. If your content can't be extracted and cited, it's invisible.
+
 AI search engines (ChatGPT, Perplexity, Google AI Overview) don't rank pages — they **cite** content. `aeoptimize` helps you make your content citable.
+
+## Quick Start
 
 ```bash
 npx aeoptimize scan your-site.com
@@ -150,7 +165,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dexuwang627-cloud/aeoptimize/action@main
+      - uses: dexuwang627-cloud/aeoptimize/action@v0.5.2
         with:
           path: dist
           min-score: 60
@@ -166,18 +181,6 @@ claude plugin marketplace add dexuwang627-cloud/aeoptimize
 - `/aeo-generate` — Guided file generation with preview
 - `/aeo-transform` — AI-powered content restructuring
 
-## Why AEO?
-
-| | SEO | AEO |
-|---|---|---|
-| **Goal** | Rank higher | Get cited |
-| **Audience** | Search crawler | Language model |
-| **Key metric** | Position | Citation accuracy |
-| **Content style** | Keyword-rich | Self-contained, structured |
-| **Structured data** | Nice to have | Essential |
-
-67% of users now get their first answer from AI. If your content can't be extracted and cited, it's invisible.
-
 ## Help
 
 ```bash
@@ -185,6 +188,16 @@ npx aeoptimize --help            # All commands
 npx aeoptimize scan --help       # Scan options
 npx aeoptimize generate --help   # Generate options
 ```
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or pull requests.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing`)
+3. Run tests (`npm test`)
+4. Commit your changes
+5. Open a Pull Request
 
 ## License
 

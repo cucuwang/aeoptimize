@@ -16,9 +16,9 @@ const HOOK_END_MARKER = '# END aeoptimize';
 const program = new Command();
 
 program
-  .name('aeo')
+  .name('aeoptimize')
   .description('CLI toolkit that transforms SEO-optimized websites into AI-search-ready content')
-  .version('0.5.0');
+  .version('0.5.2');
 
 // ── scan command ───────────────────────────────────────────────────
 
