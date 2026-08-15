@@ -1,13 +1,13 @@
 import type { ScanReport, ParsedDocument, SiteInfo, GenerateOutput } from './types.js';
 
 const AI_CRAWLERS = [
-  { name: 'GPTBot', description: 'OpenAI ChatGPT crawler' },
-  { name: 'ChatGPT-User', description: 'ChatGPT browsing feature' },
-  { name: 'ClaudeBot', description: 'Anthropic Claude crawler' },
-  { name: 'PerplexityBot', description: 'Perplexity AI crawler' },
-  { name: 'Google-Extended', description: 'Google AI/Gemini training data' },
-  { name: 'Applebot-Extended', description: 'Apple Intelligence features' },
-  { name: 'CCBot', description: 'Common Crawl (used by many AI models)' },
+  { name: 'GPTBot', description: 'OpenAI model-training crawler control' },
+  { name: 'ChatGPT-User', description: 'OpenAI user-initiated browsing control' },
+  { name: 'ClaudeBot', description: 'Anthropic crawler control' },
+  { name: 'PerplexityBot', description: 'Perplexity search crawler control' },
+  { name: 'Google-Extended', description: 'Google model-training usage control; not Google Search indexing' },
+  { name: 'Applebot-Extended', description: 'Apple generative-model usage control' },
+  { name: 'CCBot', description: 'Common Crawl control' },
 ];
 
 export function generateLlmsTxt(report: ScanReport, siteInfo: SiteInfo): string {
@@ -23,7 +23,7 @@ export function generateLlmsTxt(report: ScanReport, siteInfo: SiteInfo): string 
     lines.push('');
     for (const page of report.pages) {
       const url = page.url;
-      lines.push(`- [${page.title}](${url}): AI readability score ${page.scores.total}/100`);
+      lines.push(`- [${page.title}](${url}): content-readiness score ${page.scores.total}/100`);
     }
     lines.push('');
   }
@@ -54,52 +54,25 @@ export function generateJsonLd(doc: ParsedDocument): object[] {
   const existing = new Set(doc.jsonLd.map((ld) => ld['@type']).filter(Boolean));
   const generated: object[] = [];
 
-  // Add Article if not present and looks like an article
+  // Add an Article candidate only when visible structure and explicit metadata agree.
   if (!existing.has('Article') && !existing.has('TechArticle') && !existing.has('BlogPosting')) {
-    if (doc.headings.length >= 2 && doc.paragraphs.length >= 3) {
+    const hasArticleContainer = /<article\b/i.test(doc.html || '');
+    const author = doc.metaTags['author'];
+    const datePublished = doc.metaTags['article:published_time'] || doc.metaTags['date'];
+    if (hasArticleContainer && author && datePublished && doc.headings.length >= 2 && doc.paragraphs.length >= 3) {
       generated.push({
         '@context': 'https://schema.org',
         '@type': 'Article',
         name: doc.title,
         description: doc.metaTags['description'] || doc.paragraphs[0]?.slice(0, 160) || '',
-        author: doc.metaTags['author'] ? { '@type': 'Person', name: doc.metaTags['author'] } : undefined,
-        datePublished: doc.metaTags['article:published_time'] || undefined,
+        author: { '@type': 'Person', name: author },
+        datePublished,
       });
     }
   }
 
-  // Add FAQPage if question-style headings exist but no FAQ schema
-  if (!existing.has('FAQPage')) {
-    const questionHeadings = doc.headings.filter((h) => h.text.endsWith('?'));
-    if (questionHeadings.length >= 2) {
-      const mainEntity = questionHeadings.map((q) => {
-        // Find paragraphs that likely answer this question by searching rawText
-        // Look for content between this heading and the next heading
-        const qIdx = doc.rawText.indexOf(q.text);
-        let answer = 'Answer not extracted.';
-        if (qIdx !== -1) {
-          const afterQuestion = doc.rawText.slice(qIdx + q.text.length, qIdx + q.text.length + 500).trim();
-          // Take first sentence-like chunk
-          const firstChunk = afterQuestion.split(/\n\n|\.\s/)[0]?.trim();
-          if (firstChunk && firstChunk.length > 10) {
-            answer = firstChunk.endsWith('.') ? firstChunk : firstChunk + '.';
-          }
-        }
-        return {
-          '@type': 'Question',
-          name: q.text,
-          acceptedAnswer: { '@type': 'Answer', text: answer },
-        };
-      });
-
-      generated.push({
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        name: `${doc.title} FAQ`,
-        mainEntity,
-      });
-    }
-  }
+  // FAQPage is intentionally not inferred from headings. Generated structured data
+  // must match visible content and the eligibility rules of the target search feature.
 
   // Add BreadcrumbList from nav links if not present
   if (!existing.has('BreadcrumbList')) {
@@ -137,11 +110,6 @@ export function generateRobotsTxtSuggestions(existingRobots: string | null): str
       suggestions.push('Allow: /');
       suggestions.push('');
     }
-  }
-
-  if (!existing.includes('llms.txt') && !existing.includes('llms-full.txt')) {
-    suggestions.push('# Point AI crawlers to your llms.txt');
-    suggestions.push('# Add to your site: <link rel="llms-txt" href="/llms.txt">');
   }
 
   return suggestions;

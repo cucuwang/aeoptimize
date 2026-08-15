@@ -1,7 +1,7 @@
 {
   "name": "aeoptimize",
   "version": "0.5.3",
-  "description": "CLI toolkit that transforms SEO-optimized websites into AI-search-ready content",
+  "description": "Deterministic content-readiness lint for static websites and documentation",
   "type": "module",
   "main": "./dist/core/index.js",
   "bin": {
@@ -19,15 +19,21 @@
     "skills/",
     "agents/",
     ".claude-plugin/",
+    "docs/methodology.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "ROADMAP.md",
+    "SECURITY.md",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
+    "check": "npm test && npm run build",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm test && npm run build"
+    "prepublishOnly": "npm run check"
   },
   "keywords": [
     "aeo",
@@ -41,25 +47,28 @@
     "vite-plugin",
     "nextjs-plugin"
   ],
-  "homepage": "https://github.com/dexuwang627-cloud/aeoptimize",
+  "homepage": "https://github.com/cucuwang/aeoptimize",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dexuwang627-cloud/aeoptimize.git"
+    "url": "https://github.com/cucuwang/aeoptimize.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cucuwang/aeoptimize/issues"
   },
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.12.0"
   },
   "dependencies": {
     "chalk": "^5.3.0",
-    "puppeteer-core": "^24.0.0",
-    "cheerio": "^1.0.0",
+    "puppeteer-core": "^25.7.0",
+    "cheerio": "^1.2.0",
     "commander": "^12.0.0",
     "gray-matter": "^4.0.3"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.0.0",
     "typescript": "^5.4.0",
-    "vitest": "^2.0.0"
+    "vitest": "^4.1.10"
   }
 }

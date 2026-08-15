@@ -15,13 +15,13 @@ export function mergeScores(ruleReport: ScanReport, aiScores: AiScorerResult[]):
     // One AI + rule engine: 60/40
     const aiAvg = availableAiScores[0].score;
     consensusScore = Math.round(ruleScore * 0.6 + aiAvg * 0.4);
-    methodology = `Rule engine (60%) + ${availableAiScores[0].source} (40%)`;
+    methodology = `Experimental blend: rule engine (60%) + ${availableAiScores[0].source} review (40%); not an outcome prediction`;
   } else {
     // Multiple AIs + rule engine: 50/50
     const aiAvg = Math.round(availableAiScores.reduce((sum, s) => sum + s.score, 0) / availableAiScores.length);
     consensusScore = Math.round(ruleScore * 0.5 + aiAvg * 0.5);
     const sources = availableAiScores.map((s) => s.source).join(', ');
-    methodology = `Rule engine (50%) + AI average [${sources}] (50%)`;
+    methodology = `Experimental blend: rule engine (50%) + AI review mean [${sources}] (50%); not an outcome prediction`;
   }
 
   // Merge per-dimension scores if AI data available

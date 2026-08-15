@@ -1,5 +1,7 @@
 # Framework Plugins Design — Vite + Next.js
 
+> Historical design note. The v0.6 methodology supersedes AEO outcome language in this document; current behavior and limitations are defined in `docs/methodology.md`.
+
 ## Goal
 
 Add build-time AEO optimization to Vite and Next.js projects. On build, automatically scan output, generate llms.txt + JSON-LD, and print AEO score. Zero config required.

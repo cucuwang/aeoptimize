@@ -1,203 +1,139 @@
 # aeoptimize
 
 [![npm version](https://img.shields.io/npm/v/aeoptimize.svg)](https://www.npmjs.com/package/aeoptimize)
-[![CI](https://github.com/dexuwang627-cloud/aeoptimize/actions/workflows/ci.yml/badge.svg)](https://github.com/dexuwang627-cloud/aeoptimize/actions/workflows/ci.yml)
-[![license](https://img.shields.io/npm/l/aeoptimize.svg)](https://github.com/dexuwang627-cloud/aeoptimize/blob/main/LICENSE)
+[![CI](https://github.com/cucuwang/aeoptimize/actions/workflows/ci.yml/badge.svg)](https://github.com/cucuwang/aeoptimize/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/aeoptimize.svg)](https://github.com/cucuwang/aeoptimize/blob/main/LICENSE)
 
-**CLI toolkit + Claude Code skills that transform SEO-optimized websites into AI-search-ready content.**
+Deterministic content-readiness lint for static websites and documentation.
 
-## Why AEO?
+`aeoptimize` checks reproducible properties such as document structure, sourced quantitative claims, structured-data hygiene, indexing controls, metadata quality, and repetitive wording. It is intended for local development and CI regression checks.
 
-| | SEO | AEO |
-|---|---|---|
-| **Goal** | Rank higher | Get cited |
-| **Audience** | Search crawler | Language model |
-| **Key metric** | Position | Citation accuracy |
-| **Content style** | Keyword-rich | Self-contained, structured |
-| **Structured data** | Nice to have | Essential |
+It does **not** predict ranking, indexing, rich results, Google AI Overviews, or citation by ChatGPT, Perplexity, or another AI system. Google states that its AI search features need no special AI text file or schema, and valid structured data does not guarantee a search feature. See [methodology and limitations](docs/methodology.md).
 
-67% of users now get their first answer from AI. If your content can't be extracted and cited, it's invisible.
+## Quick start
 
-AI search engines (ChatGPT, Perplexity, Google AI Overview) don't rank pages — they **cite** content. `aeoptimize` helps you make your content citable.
-
-## Quick Start
+Requires Node.js 22.12 or newer.
 
 ```bash
-npx aeoptimize scan your-site.com
+npx aeoptimize scan https://example.com
+npx aeoptimize scan ./dist --dir
+npx aeoptimize scan ./dist --dir --json
 ```
 
-```
-AEO Readability Report
-Score: 61/100  AI Readability: Good
+Example output:
 
-  Structure        ██████████████░░░░░░ 18/25
-  Citability       ████████████░░░░░░░░ 16/25
-  Schema           ███████░░░░░░░░░░░░░  7/20
-  AI Metadata      ███████░░░░░░░░░░░░░  8/15
-  Content Density  ███████████████░░░░░ 12/15
+```text
+Content Readiness Report
+Score: 71/100
 
-Top Suggestions:
-  → Add FAQ section with question-format headings
-  → Add AI-relevant schema types
-  → Create and link an llms.txt file
+Structure        20/25
+Citability       18/25
+Schema           16/20
+AI Metadata      10/15
+Content Density   7/15
 ```
 
-## Features
+The score is a versioned heuristic for catching regressions within the same project. Do not treat it as a percentage chance of search or AI visibility, and do not compare unrelated sites as if it were an outcome metric.
 
-### Scan — AI Readability Audit
+## What is scored
 
-17 rules across 5 dimensions, 0-100 score. Zero cost, offline capable, deterministic.
+| Dimension | Max | Scope |
+| --- | ---: | --- |
+| Structure | 25 | Document outline and readability heuristics |
+| Citability | 25 | Claim specificity, source signals, definitions, attribution |
+| Schema | 20 | JSON-LD structural hygiene when present; absence is not penalized |
+| AI Metadata | 15 | Page-level indexing control and description quality |
+| Content Density | 15 | Content/boilerplate and repetition heuristics |
+
+Two often-promoted AEO signals are deliberately excluded from the score:
+
+- FAQ content and `FAQPage` schema are optional. The generator does not infer FAQ schema from question headings.
+- `llms.txt` is an experimental proposal. Generating or publishing it does not add points.
+
+Every rule, its evidence class, and known false-positive boundary is documented in [docs/methodology.md](docs/methodology.md).
+
+## CI contract
+
+`--json` is the stable automation surface. A non-zero threshold is useful only after your team reviews the baseline and accepts the current methodology version.
 
 ```bash
-npx aeoptimize scan https://example.com          # Remote URL
-npx aeoptimize scan ./dist --dir                   # Local directory
-npx aeoptimize scan ./dist --dir --json            # Machine-readable
+npx aeoptimize scan ./dist --dir --json > aeoptimize-report.json
+node -e "const r=require('./aeoptimize-report.json'); process.exit(r.overall.total < 60 ? 1 : 0)"
 ```
 
-| Dimension | Max | What it measures |
-|-----------|-----|------------------|
-| **Structure** | 25 | Heading hierarchy, paragraph length, FAQ presence |
-| **Citability** | 25 | Self-contained statements, data/stats, definitions |
-| **Schema** | 20 | JSON-LD presence, completeness, AI-relevant types |
-| **AI Metadata** | 15 | llms.txt, robots.txt AI config, meta description |
-| **Content Density** | 15 | Content vs boilerplate, keyword stuffing detection |
+The repository also contains root GitHub Action metadata for the v0.6 release line. Until a v0.6 tag is published, use the CLI directly rather than pinning an unreleased Action reference.
 
-### Multi-AI Scoring
-
-Score with multiple AI engines simultaneously. Detects `gemini` and `copilot` CLIs, dispatches parallel scoring, merges with rule engine.
+## Optional generators
 
 ```bash
-npx aeoptimize scan https://example.com --multi-ai
+npx aeoptimize generate ./dist --dry-run
+npx aeoptimize generate ./dist
 ```
 
-```
-Score: 72/100 (Rule Engine: 61 | AI Consensus: 83)
+The generator can create:
 
-  Rule Engine      ████████████░░░░░░░░ 61/100
-  Claude           ████████████████░░░░ 85/100
-  Gemini           ████████████████░░░░ 81/100
+- `llms.txt` and `llms-full.txt` as experimental outputs based on the [llms.txt proposal](https://llmstxt.org/);
+- candidate `Article` and `BreadcrumbList` JSON-LD for manual review;
+- crawler-specific `robots.txt` suggestions, printed but never applied automatically.
 
-AI Insights:
-  Claude:  "FAQ section lacks schema markup"
-  Gemini:  "Missing llms.txt reduces discoverability"
-```
+Generated structured data must be reviewed against visible content and the applicable search-engine documentation. The generator intentionally does not create `FAQPage` from headings alone.
 
-| Scenario | Weighting |
-|----------|-----------|
-| Rule engine + 2+ AIs | 50% rules + 50% AI average |
-| Rule engine + 1 AI | 60% rules + 40% AI |
-| Rule engine only | 100% rules |
-
-### Generate — AI Infrastructure Files
-
-```bash
-npx aeoptimize generate ./dist --dry-run           # Preview
-npx aeoptimize generate ./dist                    # Write files
-```
-
-Generates:
-- **llms.txt** — Machine-readable site summary ([llmstxt.org](https://llmstxt.org) standard)
-- **llms-full.txt** — Full content for deep AI consumption
-- **JSON-LD schemas** — Article, FAQPage, BreadcrumbList
-- **robots.txt suggestions** — AI crawler allow/deny rules
-
-### Transform — AI Content Restructuring (Claude Code Skill)
-
-Uses your existing Claude subscription — zero extra cost:
-
-- Split long paragraphs into citable statements
-- Extract implicit Q&A into FAQ schema
-- Remove keyword stuffing
-- Fix dangling references ("This...", "It...", "They...")
-- Inject structured data
-
-## Framework Plugins
+## Framework integrations
 
 ### Vite
 
 ```ts
-// vite.config.ts
+import { defineConfig } from 'vite';
 import { aeoPlugin } from 'aeoptimize/vite';
 
 export default defineConfig({
-  plugins: [aeoPlugin()]
+  plugins: [aeoPlugin()],
 });
 ```
 
 ### Next.js
 
-```ts
-// next.config.mjs
+```js
 import { withAeo } from 'aeoptimize/next';
 
 export default withAeo({});
 ```
 
-Build 時自動生成 `llms.txt`、`llms-full.txt`、`_aeo/generated-schemas.json` 並印出 AEO 分數。
+Both integrations scan the build output and generate the same optional artifacts as the CLI. Options: `{ silent?: boolean; outDir?: string }`.
 
-Options: `{ silent?: boolean; outDir?: string }`
-
-## Guardrails
-
-### Pre-commit Hook
+## Experimental AI review
 
 ```bash
-npx aeoptimize hook install                # Default: min score 60
-npx aeoptimize hook install --min-score 80 # Custom threshold
-npx aeoptimize hook uninstall              # Remove hook
+npx aeoptimize scan https://example.com --multi-ai
 ```
 
-Automatically checks AEO score of staged `.html` and `.md` files before each commit. Blocks commit if any file scores below the threshold.
+When supported local AI CLIs are available, this adds a subjective review and reports an experimental blend. Model output can vary and is not ground truth. The deterministic rule score remains visible separately.
 
-Works with husky too — add to your `.husky/pre-commit`:
-```bash
-npx aeoptimize scan ./dist --dir --json | node -e "const j=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); if(j.overall.total<60){console.error('AEO score too low:',j.overall.total);process.exit(1)}"
-```
-
-### GitHub Action
-
-```yaml
-# .github/workflows/aeo.yml
-name: AEO Check
-on: [pull_request]
-jobs:
-  aeo:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dexuwang627-cloud/aeoptimize/action@v0.5.3
-        with:
-          path: dist
-          min-score: 60
-```
-
-## Claude Code Skills
+## Pre-commit hook
 
 ```bash
-claude plugin marketplace add dexuwang627-cloud/aeoptimize
+npx aeoptimize hook install
+npx aeoptimize hook install --min-score 60
+npx aeoptimize hook uninstall
 ```
 
-- `/aeo-scan` — Interactive audit with multi-AI scoring
-- `/aeo-generate` — Guided file generation with preview
-- `/aeo-transform` — AI-powered content restructuring
+The hook checks staged `.html`, `.htm`, `.md`, and `.mdx` content. Review the baseline before using a threshold to block commits; `git commit --no-verify` remains an explicit escape hatch.
 
-## Help
+## Claude Code skills
 
 ```bash
-npx aeoptimize --help            # All commands
-npx aeoptimize scan --help       # Scan options
-npx aeoptimize generate --help   # Generate options
+claude plugin marketplace add cucuwang/aeoptimize
 ```
 
-## Contributing
+- `/aeo-scan` — deterministic readiness audit with optional experimental review
+- `/aeo-generate` — preview optional discovery artifacts
+- `/aeo-transform` — propose content edits without inventing claims
 
-Contributions are welcome! Feel free to open issues or pull requests.
+## Project status
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing`)
-3. Run tests (`npm test`)
-4. Commit your changes
-5. Open a Pull Request
+The next evidence release focuses on methodology, reproducible fixtures, CI compatibility, packaging, and external adoption—not more scoring rules. See [ROADMAP.md](ROADMAP.md).
+
+Contributions are welcome. Rule changes require an evidence note and positive/negative fixtures; see [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities through the process in [SECURITY.md](SECURITY.md).
 
 ## License
 

@@ -43,8 +43,8 @@ export function aeoPlugin(options?: { silent?: boolean; outDir?: string }) {
       }
 
       if (!options?.silent) {
-        console.log(`[aeoptimize] AEO Score: ${report.overall.total}/100 (${report.pages.length} pages)`);
-        console.log(`[aeoptimize] Generated: llms.txt, llms-full.txt${output.jsonLd.length ? ', _aeo/generated-schemas.json' : ''}`);
+        console.log(`[aeoptimize] Readiness score: ${report.overall.total}/100 (${report.pages.length} pages)`);
+        console.log(`[aeoptimize] Generated optional artifacts: llms.txt, llms-full.txt${output.jsonLd.length ? ', _aeo/generated-schemas.json' : ''}`);
       }
     },
   };

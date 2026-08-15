@@ -1,60 +1,51 @@
 ---
 title: "Getting Started with llms.txt"
-author: "John Doe"
-date: "2026-02-01"
+author: "Fixture Author"
+date: "2026-08-15"
 ---
 
 # Getting Started with llms.txt
 
-llms.txt is an emerging standard that helps large language models understand your website's content and structure. The standard was proposed by Jeremy Howard of fast.ai in 2024.
+llms.txt is a proposal for publishing a concise Markdown summary of a website. The proposal does not define a mandatory client behavior, and publishing the file does not prove that a search engine or assistant will use it.
 
 ## What is llms.txt?
 
-llms.txt is a plain text file placed at the root of your website (e.g., `https://example.com/llms.txt`) that provides a structured summary of your site's content specifically designed for LLM consumption.
+The proposed file lives at a site root and can list important pages with short descriptions. Teams can evaluate it as an optional interoperability adapter while keeping established crawling, indexing, and content-quality work separate.
 
-The llms.txt format uses Markdown with specific conventions:
+The proposed structure includes:
 
 - An H1 heading with the site name
 - A blockquote with a brief site description
-- Sections with links to key pages
-- Optional detailed content sections
+- Sections with links to selected pages
+- Optional explanatory notes
 
-## Why You Need llms.txt
+## What can be tested?
 
-Our analysis of 10,000 websites shows that sites with llms.txt are cited 2.1x more frequently by AI assistants. The file gives AI engines a roadmap to your content, reducing the chance of misinterpretation.
+A reproducible experiment can confirm that the file is generated, deployed at the intended URL, contains accurate links, and changes only when its source content changes. Those tests do not measure ranking or citation.
 
-Key benefits include:
+Useful engineering checks include:
 
-1. Better AI citation accuracy — 89% improvement in correct attribution
-2. Faster content indexing by AI crawlers — 3x faster discovery
-3. Reduced hallucination when AI discusses your product or service
+1. Stable output for an unchanged site
+2. Valid links to public pages
+3. No private URLs or secrets
+4. A documented rollback path
 
-## How to Create llms.txt
+## How to create a draft
 
-Creating an llms.txt file takes about 15 minutes. Here is the basic structure:
+Preview the generated file before writing it:
 
-```markdown
-# Your Site Name
-
-> Brief description of what your site is about.
-
-## Main Pages
-
-- [Page Title](https://example.com/page): Brief description
-- [Another Page](https://example.com/another): Brief description
-
-## Documentation
-
-- [Getting Started](https://example.com/docs/start): Quick start guide
-- [API Reference](https://example.com/docs/api): Full API documentation
+```bash
+npx aeoptimize generate ./dist --dry-run
 ```
+
+Review the site name, description, page selection, and every URL. Publish the draft only when the team accepts its experimental status.
 
 ## Frequently Asked Questions
 
 ### Is llms.txt the same as robots.txt?
 
-llms.txt and robots.txt serve different purposes. robots.txt controls crawler access permissions. llms.txt provides content summaries for AI understanding. Both files can coexist at your site root.
+No. robots.txt communicates crawler access rules. The llms.txt proposal is a content summary and does not grant access or override indexing controls.
 
-### Do all AI engines support llms.txt?
+### Do all AI systems support llms.txt?
 
-As of 2026, Perplexity, Claude, and several other AI engines actively check for llms.txt. Google AI Overview uses it as a supplementary signal. Support is growing rapidly.
+No universal support contract is established by the proposal. Verify each target system from current first-party documentation and record the observation date.

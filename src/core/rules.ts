@@ -5,7 +5,7 @@ import type { ScoringRule, ParsedDocument, RuleResult, Issue, Suggestion } from 
 const headingHierarchy: ScoringRule = {
   id: 'heading-hierarchy',
   dimension: 'structure',
-  weight: 8,
+  weight: 10,
   evaluate(doc: ParsedDocument): RuleResult {
     const issues: Issue[] = [];
     const suggestions: Suggestion[] = [];
@@ -15,28 +15,21 @@ const headingHierarchy: ScoringRule = {
       issues.push({
         dimension: 'structure',
         severity: 'critical',
-        message: 'No headings found. AI engines rely on heading structure to understand content hierarchy.',
+        message: 'No headings found. Descriptive headings help readers and parsers understand the page structure.',
       });
-      return { score: 0, maxScore: 8, issues, suggestions };
+      return { score: 0, maxScore: 10, issues, suggestions };
     }
 
-    let score = 8;
+    let score = 10;
 
-    // Check for single H1
+    // A clear main heading is useful, but multiple H1 elements are not an automatic SEO error.
     const h1s = headings.filter((h) => h.level === 1);
     if (h1s.length === 0) {
-      score -= 3;
-      issues.push({
-        dimension: 'structure',
-        severity: 'warning',
-        message: 'No H1 heading found. Every page should have exactly one H1.',
-      });
-    } else if (h1s.length > 1) {
       score -= 2;
       issues.push({
         dimension: 'structure',
         severity: 'warning',
-        message: `Found ${h1s.length} H1 headings. Use exactly one H1 per page.`,
+        message: 'No H1 heading found. Add a descriptive main heading when the page does not expose an equivalent primary title.',
       });
     }
 
@@ -51,7 +44,7 @@ const headingHierarchy: ScoringRule = {
           issues.push({
             dimension: 'structure',
             severity: 'warning',
-            message: `Heading level skipped: H${prev} → H${curr}. This confuses AI content parsing.`,
+            message: `Heading level skipped: H${prev} → H${curr}. Review whether the document outline still communicates the intended hierarchy.`,
           });
         }
       }
@@ -66,7 +59,53 @@ const headingHierarchy: ScoringRule = {
         dimension: 'structure',
         action: 'Add more headings to break up long content',
         impact: 'medium',
-        detail: `${wordCount} words with only ${headings.length} headings. Aim for one heading per 200-300 words.`,
+        detail: `${wordCount} words with only ${headings.length} headings. Add sections where they improve navigation; no fixed heading-to-word ratio is required.`,
+      });
+    }
+
+    return { score: Math.max(0, score), maxScore: 10, issues, suggestions };
+  },
+};
+
+const paragraphLength: ScoringRule = {
+  id: 'paragraph-length',
+  dimension: 'structure',
+  weight: 8,
+  evaluate(doc: ParsedDocument): RuleResult {
+    const issues: Issue[] = [];
+    const suggestions: Suggestion[] = [];
+    const { paragraphs } = doc;
+
+    if (paragraphs.length === 0) {
+      return { score: 0, maxScore: 8, issues: [{ dimension: 'structure', severity: 'warning', message: 'No paragraphs detected.' }], suggestions };
+    }
+
+    const longParagraphs = paragraphs.filter((p) => p.split(/\s+/).length > 150);
+    const ratio = longParagraphs.length / paragraphs.length;
+
+    let score = 8;
+    if (ratio > 0.5) {
+      score -= 5;
+      issues.push({
+        dimension: 'structure',
+        severity: 'critical',
+        message: `${longParagraphs.length}/${paragraphs.length} paragraphs exceed the configured 150-word readability heuristic.`,
+      });
+    } else if (ratio > 0.2) {
+      score -= 3;
+      issues.push({
+        dimension: 'structure',
+        severity: 'warning',
+        message: `${longParagraphs.length} paragraphs exceed the configured 150-word readability heuristic.`,
+      });
+    }
+
+    if (longParagraphs.length > 0) {
+      suggestions.push({
+        dimension: 'structure',
+        action: 'Review long paragraphs for readability',
+        impact: 'high',
+        detail: 'Split only where it improves comprehension. Paragraph length is a configurable heuristic, not a ranking or citation factor.',
       });
     }
 
@@ -74,92 +113,19 @@ const headingHierarchy: ScoringRule = {
   },
 };
 
-const paragraphLength: ScoringRule = {
-  id: 'paragraph-length',
-  dimension: 'structure',
-  weight: 7,
-  evaluate(doc: ParsedDocument): RuleResult {
-    const issues: Issue[] = [];
-    const suggestions: Suggestion[] = [];
-    const { paragraphs } = doc;
-
-    if (paragraphs.length === 0) {
-      return { score: 0, maxScore: 7, issues: [{ dimension: 'structure', severity: 'warning', message: 'No paragraphs detected.' }], suggestions };
-    }
-
-    const longParagraphs = paragraphs.filter((p) => p.split(/\s+/).length > 150);
-    const ratio = longParagraphs.length / paragraphs.length;
-
-    let score = 7;
-    if (ratio > 0.5) {
-      score -= 5;
-      issues.push({
-        dimension: 'structure',
-        severity: 'critical',
-        message: `${longParagraphs.length}/${paragraphs.length} paragraphs exceed 150 words. LLMs struggle to extract citable quotes from long paragraphs.`,
-      });
-    } else if (ratio > 0.2) {
-      score -= 3;
-      issues.push({
-        dimension: 'structure',
-        severity: 'warning',
-        message: `${longParagraphs.length} paragraphs exceed 150 words. Split them for better AI citability.`,
-      });
-    }
-
-    if (longParagraphs.length > 0) {
-      suggestions.push({
-        dimension: 'structure',
-        action: 'Split long paragraphs into self-contained statements',
-        impact: 'high',
-        detail: 'Ideal paragraph length for AI extraction: 40-80 words. Each paragraph should express one complete idea.',
-      });
-    }
-
-    return { score: Math.max(0, score), maxScore: 7, issues, suggestions };
-  },
-};
-
 const faqPresence: ScoringRule = {
   id: 'faq-presence',
   dimension: 'structure',
-  weight: 5,
-  evaluate(doc: ParsedDocument): RuleResult {
-    const issues: Issue[] = [];
-    const suggestions: Suggestion[] = [];
-
-    const hasFaqHeading = doc.headings.some((h) => /faq|frequently asked|common questions/i.test(h.text));
-    const hasFaqSchema = doc.jsonLd.some((ld) => ld['@type'] === 'FAQPage');
-    const hasQuestionHeadings = doc.headings.filter((h) => h.text.endsWith('?')).length >= 2;
-
-    let score = 0;
-    if (hasFaqSchema) score += 3;
-    if (hasFaqHeading || hasQuestionHeadings) score += 2;
-
-    if (score === 0) {
-      suggestions.push({
-        dimension: 'structure',
-        action: 'Add FAQ section with question-format headings',
-        impact: 'high',
-        detail: 'FAQ sections are highly cited by AI search engines. Structure as H2/H3 questions with concise answers.',
-      });
-    } else if (!hasFaqSchema && (hasFaqHeading || hasQuestionHeadings)) {
-      suggestions.push({
-        dimension: 'structure',
-        action: 'Add FAQPage JSON-LD schema for existing FAQ content',
-        impact: 'medium',
-        detail: 'You have FAQ-like content but no FAQPage schema markup.',
-      });
-    }
-
-    return { score: Math.min(5, score), maxScore: 5, issues, suggestions };
+  weight: 0,
+  evaluate(_doc: ParsedDocument): RuleResult {
+    return { score: 0, maxScore: 0, issues: [], suggestions: [] };
   },
 };
 
 const listUsage: ScoringRule = {
   id: 'list-usage',
   dimension: 'structure',
-  weight: 5,
+  weight: 7,
   evaluate(doc: ParsedDocument): RuleResult {
     const suggestions: Suggestion[] = [];
 
@@ -167,18 +133,18 @@ const listUsage: ScoringRule = {
     const hasLists = /(?:<[ou]l>|^[-*]\s|^\d+\.\s)/m.test(doc.html || doc.markdown || '');
     const wordCount = doc.rawText.split(/\s+/).length;
 
-    let score = 5;
+    let score = 7;
     if (!hasLists && wordCount > 300) {
-      score = 2;
+      score = 4;
       suggestions.push({
         dimension: 'structure',
         action: 'Add bullet or numbered lists for scannable content',
         impact: 'low',
-        detail: 'Lists help AI engines extract key points. Convert sequences or steps into structured lists.',
+        detail: 'Use a list when the content is genuinely a sequence or set; do not convert prose only to satisfy the score.',
       });
     }
 
-    return { score, maxScore: 5, issues: [], suggestions };
+    return { score, maxScore: 7, issues: [], suggestions };
   },
 };
 
@@ -232,33 +198,36 @@ const dataStatsPresence: ScoringRule = {
   dimension: 'citability',
   weight: 7,
   evaluate(doc: ParsedDocument): RuleResult {
+    const issues: Issue[] = [];
     const suggestions: Suggestion[] = [];
 
     // Look for numbers, percentages, dates, monetary values
     const dataPatterns = /(\d+%|\$[\d,.]+|€[\d,.]+|\d{4}[-/]\d{2}[-/]\d{2}|\d+\s*(users|customers|companies|countries|years|months|hours|minutes|seconds|ms|GB|MB|TB|requests|transactions))/gi;
     const matches = doc.rawText.match(dataPatterns) || [];
 
-    const wordCount = doc.rawText.split(/\s+/).length;
-    const dataPerKWords = (matches.length / wordCount) * 1000;
-
-    let score: number;
-    if (dataPerKWords >= 3) {
-      score = 7;
-    } else if (dataPerKWords >= 1) {
-      score = 5;
-    } else if (matches.length > 0) {
-      score = 3;
-    } else {
-      score = 1;
-      suggestions.push({
-        dimension: 'citability',
-        action: 'Add specific data points, statistics, or metrics',
-        impact: 'high',
-        detail: 'AI engines strongly prefer content with concrete numbers. Add dates, percentages, counts, or benchmarks.',
-      });
+    if (matches.length === 0) {
+      return { score: 7, maxScore: 7, issues, suggestions };
     }
 
-    return { score, maxScore: 7, issues: [], suggestions };
+    const hasSourceLanguage = /(?:according to|source:|reference:|cited from|data from)/i.test(doc.rawText);
+    const hasExternalLink = doc.links.some((link) => /^https?:\/\//i.test(link.href));
+
+    if (!hasSourceLanguage && !hasExternalLink) {
+      issues.push({
+        dimension: 'citability',
+        severity: 'warning',
+        message: `Found ${matches.length} quantitative claim${matches.length === 1 ? '' : 's'} without a detectable source reference.`,
+      });
+      suggestions.push({
+        dimension: 'citability',
+        action: 'Cite the source for quantitative claims',
+        impact: 'high',
+        detail: 'Do not add statistics merely to improve a score. Link each material number to a reliable source or explain the measurement method.',
+      });
+      return { score: 3, maxScore: 7, issues, suggestions };
+    }
+
+    return { score: 7, maxScore: 7, issues, suggestions };
   },
 };
 
@@ -284,7 +253,7 @@ const clearDefinitions: ScoringRule = {
         dimension: 'citability',
         action: 'Add clear definitions for key terms',
         impact: 'medium',
-        detail: 'Use "X is Y" pattern to define concepts. AI engines often extract these as featured snippets.',
+        detail: 'Define unfamiliar terms where readers need them. This is a clarity heuristic, not a featured-snippet guarantee.',
       });
     }
 
@@ -319,7 +288,7 @@ const attribution: ScoringRule = {
         dimension: 'citability',
         action: 'Add author and publication date metadata',
         impact: 'medium',
-        detail: 'AI engines weigh attributed content higher. Add meta author, published date, and source citations.',
+        detail: 'For authored or time-sensitive content, add accurate author, publication date, and source references. Omit fields that do not apply.',
       });
     }
 
@@ -332,36 +301,36 @@ const attribution: ScoringRule = {
 const jsonLdPresence: ScoringRule = {
   id: 'json-ld-presence',
   dimension: 'schema',
-  weight: 6,
+  weight: 8,
   evaluate(doc: ParsedDocument): RuleResult {
     const issues: Issue[] = [];
 
     if (doc.jsonLd.length === 0) {
       issues.push({
         dimension: 'schema',
-        severity: 'critical',
-        message: 'No JSON-LD structured data found. AI engines rely heavily on structured data to understand content.',
+        severity: 'info',
+        message: 'No JSON-LD structured data found. Add a supported type only when it matches visible content and serves a defined search feature.',
       });
-      return { score: 0, maxScore: 6, issues, suggestions: [] };
+      return { score: 8, maxScore: 8, issues, suggestions: [] };
     }
 
-    return { score: 6, maxScore: 6, issues, suggestions: [] };
+    return { score: 8, maxScore: 8, issues, suggestions: [] };
   },
 };
 
 const jsonLdCompleteness: ScoringRule = {
   id: 'json-ld-completeness',
   dimension: 'schema',
-  weight: 7,
+  weight: 12,
   evaluate(doc: ParsedDocument): RuleResult {
     const issues: Issue[] = [];
     const suggestions: Suggestion[] = [];
 
     if (doc.jsonLd.length === 0) {
-      return { score: 0, maxScore: 7, issues, suggestions };
+      return { score: 12, maxScore: 12, issues, suggestions };
     }
 
-    const requiredFields = ['@type', 'name', 'description'];
+    const requiredFields = ['@context', '@type'];
     let totalScore = 0;
     let checked = 0;
 
@@ -370,9 +339,9 @@ const jsonLdCompleteness: ScoringRule = {
       const missing = requiredFields.filter((f) => !ld[f]);
 
       if (missing.length === 0) {
-        totalScore += 7;
+        totalScore += 12;
       } else {
-        totalScore += Math.max(0, 7 - missing.length * 2);
+        totalScore += Math.max(0, 12 - missing.length * 6);
         issues.push({
           dimension: 'schema',
           severity: 'warning',
@@ -391,7 +360,7 @@ const jsonLdCompleteness: ScoringRule = {
           dimension: 'schema',
           action: 'Add author field to Article schema',
           impact: 'medium',
-          detail: 'Articles with author attribution are more likely to be cited by AI.',
+          detail: 'Add an accurate author only when the visible article identifies that author.',
         });
       }
       if (!article.datePublished) {
@@ -399,44 +368,32 @@ const jsonLdCompleteness: ScoringRule = {
           dimension: 'schema',
           action: 'Add datePublished to Article schema',
           impact: 'medium',
-          detail: 'AI engines prefer content with clear publication dates.',
+          detail: 'Add the actual publication date only when it is visible or otherwise verifiable.',
         });
       }
     }
 
-    return { score: Math.min(7, score), maxScore: 7, issues, suggestions };
+    return { score: Math.min(12, score), maxScore: 12, issues, suggestions };
   },
 };
 
 const aiRelevantSchemaTypes: ScoringRule = {
   id: 'ai-relevant-schema-types',
   dimension: 'schema',
-  weight: 7,
+  weight: 0,
   evaluate(doc: ParsedDocument): RuleResult {
     const suggestions: Suggestion[] = [];
 
-    const aiRelevantTypes = ['Article', 'FAQPage', 'HowTo', 'Product', 'Organization', 'BreadcrumbList', 'WebPage', 'TechArticle'];
-    const foundTypes = new Set(doc.jsonLd.map((ld) => ld['@type']).filter(Boolean));
-    const relevantFound = aiRelevantTypes.filter((t) => foundTypes.has(t));
-
-    let score: number;
-    if (relevantFound.length >= 3) {
-      score = 7;
-    } else if (relevantFound.length >= 2) {
-      score = 5;
-    } else if (relevantFound.length === 1) {
-      score = 3;
-    } else {
-      score = 0;
+    if (doc.jsonLd.length > 0) {
       suggestions.push({
         dimension: 'schema',
-        action: 'Add AI-relevant schema types',
-        impact: 'high',
-        detail: `Consider adding: ${aiRelevantTypes.slice(0, 4).join(', ')}. These types are most frequently extracted by AI search engines.`,
+        action: 'Validate structured data against the applicable feature documentation',
+        impact: 'low',
+        detail: 'Schema type count has no score impact. Validate required properties and ensure every value matches visible page content.',
       });
     }
 
-    return { score, maxScore: 7, issues: [], suggestions };
+    return { score: 0, maxScore: 0, issues: [], suggestions };
   },
 };
 
@@ -445,31 +402,16 @@ const aiRelevantSchemaTypes: ScoringRule = {
 const llmsTxtPresence: ScoringRule = {
   id: 'llms-txt-presence',
   dimension: 'aiMetadata',
-  weight: 5,
-  evaluate(doc: ParsedDocument): RuleResult {
-    const suggestions: Suggestion[] = [];
-
-    // For now, check meta tags for llms.txt reference or if the doc itself is llms.txt
-    const hasLlmsTxtMeta = !!doc.metaTags['llms-txt'] || doc.links.some((l) => /llms\.txt/i.test(l.href));
-
-    if (!hasLlmsTxtMeta) {
-      suggestions.push({
-        dimension: 'aiMetadata',
-        action: 'Create and link an llms.txt file',
-        impact: 'high',
-        detail: 'llms.txt is the emerging standard for making your site AI-readable. Use `aeo generate` to create one.',
-      });
-      return { score: 0, maxScore: 5, issues: [], suggestions };
-    }
-
-    return { score: 5, maxScore: 5, issues: [], suggestions };
+  weight: 0,
+  evaluate(_doc: ParsedDocument): RuleResult {
+    return { score: 0, maxScore: 0, issues: [], suggestions: [] };
   },
 };
 
 const robotsTxtAiConfig: ScoringRule = {
   id: 'robots-txt-ai-config',
   dimension: 'aiMetadata',
-  weight: 5,
+  weight: 8,
   evaluate(doc: ParsedDocument): RuleResult {
     const suggestions: Suggestion[] = [];
 
@@ -480,32 +422,32 @@ const robotsTxtAiConfig: ScoringRule = {
     if (hasNoindex) {
       return {
         score: 0,
-        maxScore: 5,
+        maxScore: 8,
         issues: [{
           dimension: 'aiMetadata',
           severity: 'critical',
-          message: 'Page has noindex meta tag. AI crawlers will skip this page.',
+          message: 'Page has a noindex meta tag. Search engines may exclude it from results; review whether that is intentional.',
         }],
         suggestions,
       };
     }
 
-    // Give partial credit — full robots.txt analysis requires directory-level scan
+    // Page-level noindex is deterministic. Site-level crawler access must be verified separately.
     suggestions.push({
       dimension: 'aiMetadata',
-      action: 'Configure robots.txt with explicit AI crawler rules',
-      impact: 'medium',
-      detail: 'Add rules for GPTBot, ClaudeBot, PerplexityBot, Google-Extended to control AI crawler access.',
+      action: 'Verify crawler access separately from the page score',
+      impact: 'low',
+      detail: 'robots.txt, CDN bot controls, and each service crawler have different effects. A permissive rule does not guarantee indexing or citation.',
     });
 
-    return { score: 3, maxScore: 5, issues: [], suggestions };
+    return { score: 8, maxScore: 8, issues: [], suggestions };
   },
 };
 
 const metaDescriptionQuality: ScoringRule = {
   id: 'meta-description-quality',
   dimension: 'aiMetadata',
-  weight: 5,
+  weight: 7,
   evaluate(doc: ParsedDocument): RuleResult {
     const issues: Issue[] = [];
     const suggestions: Suggestion[] = [];
@@ -516,35 +458,37 @@ const metaDescriptionQuality: ScoringRule = {
       issues.push({
         dimension: 'aiMetadata',
         severity: 'warning',
-        message: 'No meta description found. AI engines use this as a primary content summary.',
+        message: 'No meta description found. Search engines may generate a snippet from page content instead.',
       });
-      return { score: 0, maxScore: 5, issues, suggestions };
+      return { score: 0, maxScore: 7, issues, suggestions };
     }
 
-    let score = 3;
+    const words = desc.trim().split(/\s+/).filter(Boolean);
+    const looksGeneric = words.length < 3 || /^(home|welcome|official site|website)$/i.test(desc.trim());
+    const commaCount = (desc.match(/,/g) || []).length;
+    const looksLikeKeywordList = commaCount >= 4 && !/[.!?]/.test(desc);
 
-    // Check length
-    if (desc.length >= 50 && desc.length <= 160) {
-      score += 2;
-    } else if (desc.length < 50) {
-      score += 0;
+    if (looksGeneric) {
       suggestions.push({
         dimension: 'aiMetadata',
-        action: 'Expand meta description to 50-160 characters',
-        impact: 'low',
-        detail: `Current length: ${desc.length} characters. Too short for AI to use as summary.`,
+        action: 'Write a page-specific meta description',
+        impact: 'medium',
+        detail: 'Describe the page accurately. Google does not impose a fixed meta-description length limit.',
       });
-    } else {
-      score += 1;
-      suggestions.push({
-        dimension: 'aiMetadata',
-        action: 'Shorten meta description to under 160 characters',
-        impact: 'low',
-        detail: `Current length: ${desc.length} characters. May be truncated by AI engines.`,
-      });
+      return { score: 3, maxScore: 7, issues, suggestions };
     }
 
-    return { score, maxScore: 5, issues, suggestions };
+    if (looksLikeKeywordList) {
+      suggestions.push({
+        dimension: 'aiMetadata',
+        action: 'Replace the keyword list with a readable page summary',
+        impact: 'medium',
+        detail: 'A descriptive sentence is more useful than comma-separated terms. Length alone does not determine quality.',
+      });
+      return { score: 3, maxScore: 7, issues, suggestions };
+    }
+
+    return { score: 7, maxScore: 7, issues, suggestions };
   },
 };
 
@@ -636,7 +580,7 @@ const keywordStuffingDetection: ScoringRule = {
     // Low diversity + high consecutive repetition = stuffing
     if (diversity < 0.25 && consecutiveHits >= 2) {
       score = 0;
-      issues.push({ dimension: 'contentDensity', severity: 'warning', message: `Low vocabulary diversity (${(diversity * 100).toFixed(0)}%) with repetitive phrasing. This pattern signals keyword stuffing to AI engines.` });
+      issues.push({ dimension: 'contentDensity', severity: 'warning', message: `Low vocabulary diversity (${(diversity * 100).toFixed(0)}%) with repetitive phrasing. Review this as a possible keyword-stuffing pattern.` });
       suggestions.push({ dimension: 'contentDensity', action: 'Diversify vocabulary and vary sentence structure', impact: 'high', detail: 'Use synonyms, rephrase repeated concepts, and ensure each sentence adds unique value.' });
     } else if (diversity < 0.3 || consecutiveHits >= 2) {
       score = 2;
@@ -670,7 +614,7 @@ const contentUniquenessSignals: ScoringRule = {
         dimension: 'contentDensity',
         action: 'Add original data, examples, or unique insights',
         impact: 'medium',
-        detail: 'AI engines prefer content with original research, unique data points, or practical examples over generic information.',
+        detail: 'Add verifiable original research, practical examples, or implementation details when they help the reader. Do not invent data to satisfy this heuristic.',
       });
     }
 

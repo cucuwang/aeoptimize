@@ -10,8 +10,9 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [18, 20, 22]
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,6 +21,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - run: npm pack --dry-run
+      - run: npm audit --audit-level=high
 
   lint-readme-commands:
     runs-on: ubuntu-latest
@@ -27,8 +30,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
       - run: npm ci
       - run: npm run build
       - name: Verify CLI is callable as aeoptimize
         run: node dist/cli/index.js --version
+      - name: Verify public metadata uses the current repository owner
+        run: npm test -- --run src/core/__tests__/evidence-boundaries.test.ts

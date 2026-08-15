@@ -1,5 +1,5 @@
 name: aeoptimize Content Readiness Check
-description: Compatibility path for the root aeoptimize readiness Action
+description: Run the deterministic aeoptimize readiness lint against a build directory
 branding:
   icon: search
   color: blue

@@ -17,17 +17,17 @@ const program = new Command();
 
 program
   .name('aeoptimize')
-  .description('CLI toolkit that transforms SEO-optimized websites into AI-search-ready content')
+  .description('Deterministic content-readiness lint for websites and documentation')
   .version('0.5.3');
 
 // ── scan command ───────────────────────────────────────────────────
 
 program
   .command('scan <target>')
-  .description('Scan a URL or directory for AI readability')
+  .description('Scan a URL or directory for content-readiness regressions')
   .option('--json', 'Output raw JSON report')
   .option('--dir', 'Treat target as a local directory instead of a URL')
-  .option('--multi-ai', 'Score with multiple AI engines (gemini, copilot) if available')
+  .option('--multi-ai', 'Add experimental reviews from available AI CLIs (gemini, copilot)')
   .action(async (target: string, options: { json?: boolean; dir?: boolean; multiAi?: boolean }) => {
     try {
       if (!target || target.trim().length === 0) {
@@ -65,7 +65,7 @@ program
 
 program
   .command('generate <dir>')
-  .description('Generate AI infrastructure files (llms.txt, JSON-LD, robots.txt suggestions)')
+  .description('Generate optional discovery artifacts (llms.txt proposal, JSON-LD, robots suggestions)')
   .option('--out <dir>', 'Output directory (defaults to input directory)')
   .option('--json', 'Output raw JSON')
   .option('--dry-run', 'Preview without writing files')
@@ -159,9 +159,9 @@ program
         await writeFile(join(jsonLdDir, 'generated-schemas.json'), JSON.stringify(output.jsonLd, null, 2), 'utf-8');
       }
 
-      console.log(chalk.green.bold('\n✅ Generated AI infrastructure files:\n'));
-      console.log(`  ${chalk.white('llms.txt')}         — AI-readable site summary`);
-      console.log(`  ${chalk.white('llms-full.txt')}    — Full content for AI consumption`);
+      console.log(chalk.green.bold('\n✅ Generated optional discovery artifacts:\n'));
+      console.log(`  ${chalk.white('llms.txt')}         — Experimental site summary (llmstxt.org proposal)`);
+      console.log(`  ${chalk.white('llms-full.txt')}    — Experimental full-content companion`);
       if (output.jsonLd.length > 0) {
         console.log(`  ${chalk.white('_aeo/generated-schemas.json')} — ${output.jsonLd.length} JSON-LD schemas`);
       }
@@ -183,8 +183,8 @@ const hookCmd = program
 
 hookCmd
   .command('install')
-  .description('Install pre-commit hook that checks AEO score')
-  .option('--min-score <score>', 'Minimum AEO score to pass (default: 60)', '60')
+  .description('Install pre-commit hook that checks the readiness score')
+  .option('--min-score <score>', 'Minimum project readiness score (default: 60)', '60')
   .action(async (options: { minScore: string }) => {
     const minScore = parseInt(options.minScore, 10);
     if (isNaN(minScore) || minScore < 0 || minScore > 100) {
@@ -193,7 +193,7 @@ hookCmd
     }
 
     const hookScript = `${HOOK_BEGIN_MARKER}
-# aeoptimize pre-commit hook — checks AEO score of staged HTML/MD files
+# aeoptimize pre-commit hook — checks readiness of staged HTML/MD files
 MIN_SCORE=${minScore}
 
 # Find staged HTML and MD files
@@ -202,7 +202,7 @@ if [ -z "$FILES" ]; then
   exit 0
 fi
 
-echo "[aeoptimize] Checking AEO score of staged files..."
+echo "[aeoptimize] Checking content readiness of staged files..."
 
 FAILED=0
 OLD_IFS=$IFS
@@ -374,7 +374,7 @@ function printReport(report: ScanReport): void {
   const { overall } = report;
 
   console.log('');
-  console.log(chalk.bold('  AEO Readability Report'));
+  console.log(chalk.bold('  Content Readiness Report'));
   console.log(chalk.dim(`  ${report.timestamp}`));
   console.log(chalk.dim(`  ${report.pages.length} page${report.pages.length > 1 ? 's' : ''} scanned`));
   console.log('');
@@ -496,19 +496,19 @@ function printMultiAiReport(report: MultiAiReport): void {
   const { overall } = report;
 
   console.log('');
-  console.log(chalk.bold('  AEO Readability Report (Multi-AI)'));
+  console.log(chalk.bold('  Content Readiness Report (Experimental AI Review)'));
   console.log(chalk.dim(`  ${report.timestamp}`));
   console.log(chalk.dim(`  ${report.pages.length} page${report.pages.length > 1 ? 's' : ''} scanned`));
   console.log(chalk.dim(`  ${report.methodology}`));
   console.log('');
 
-  // Consensus score
+  // Blended review score. AI reviewers are experimental and do not establish ground truth.
   const scoreColor = report.consensusScore >= 70 ? chalk.green : report.consensusScore >= 40 ? chalk.yellow : chalk.red;
   const availableScores = report.aiScores.filter((s) => s.available);
-  const aiConsensus = availableScores.length > 0
+  const aiReviewMean = availableScores.length > 0
     ? String(Math.round(availableScores.reduce((sum, s) => sum + s.score, 0) / availableScores.length))
     : 'N/A';
-  console.log(`  ${chalk.bold('Score:')} ${scoreColor.bold(String(report.consensusScore))}${chalk.dim('/100')} (Rule Engine: ${report.ruleScore} | AI Consensus: ${aiConsensus})`);
+  console.log(`  ${chalk.bold('Experimental blend:')} ${scoreColor.bold(String(report.consensusScore))}${chalk.dim('/100')} (Rules: ${report.ruleScore} | AI review mean: ${aiReviewMean})`);
   console.log('');
 
   // Source breakdown
@@ -586,7 +586,7 @@ function printScoreBar(label: string, score: number, max: number): void {
 function printSkillCta(): void {
   console.log(chalk.dim('  ─────────────────────────────────────────'));
   console.log(chalk.dim('  Want AI-powered fixes? Install as Claude Code skill:'));
-  console.log(chalk.white('    claude plugin marketplace add dexuwang627-cloud/aeoptimize'));
+  console.log(chalk.white('    claude plugin marketplace add cucuwang/aeoptimize'));
   console.log(chalk.dim('  Then use: /aeo-scan, /aeo-generate, /aeo-transform'));
   console.log('');
 }
