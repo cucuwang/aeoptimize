@@ -79,7 +79,7 @@ Projects can explicitly choose blocking mode after accepting a baseline:
     min-score: '60'
 ```
 
-The Action exposes `score` and `report` outputs in both modes. Its release is reproducible only when the Action tag and matching npm package version both exist. Until `v0.6.0` is published in both places, use the CLI directly rather than pinning the unreleased Action reference.
+The Action exposes `score` and `report` outputs in both modes. Its release is reproducible only when the Action tag and matching npm package version both exist. Before pinning a version, verify both artifacts; if either is missing, use the CLI directly.
 
 ## Optional generators
 
