@@ -304,17 +304,6 @@ async function fetchWithSafeRedirects(input: string | URL, init?: RequestInit, m
   throw new Error(`Too many redirects while fetching ${currentUrl.toString()}`);
 }
 
-async function checkLlmsTxt(url: string): Promise<boolean> {
-  try {
-    const u = new URL(url);
-    const llmsUrl = `${u.protocol}//${u.host}/llms.txt`;
-    const res = await fetchWithSafeRedirects(llmsUrl, { method: 'HEAD' });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
 function findChromePath(): string | null {
   const candidates = process.platform === 'darwin'
     ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Chromium.app/Contents/MacOS/Chromium']
@@ -362,10 +351,7 @@ function isSpaLikely(html: string): boolean {
 
 export async function scanUrl(url: string): Promise<ScanReport> {
   validateUrl(url);
-  const [response, hasLlmsTxt] = await Promise.all([
-    fetchWithSafeRedirects(url),
-    checkLlmsTxt(url),
-  ]);
+  const response = await fetchWithSafeRedirects(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
   }
@@ -387,11 +373,6 @@ export async function scanUrl(url: string): Promise<ScanReport> {
   }
 
   const doc = parseHtml(html, url);
-
-  // Inject llms.txt discovery into metaTags so rules can pick it up
-  if (hasLlmsTxt && !doc.metaTags['llms-txt']) {
-    doc.metaTags['llms-txt'] = '/llms.txt';
-  }
 
   const analysis = scanDocument(doc);
 
@@ -461,5 +442,5 @@ function averageScores(scores: DimensionScores[]): DimensionScores {
 
 function generateSummary(scores: DimensionScores, pageCount: number): string {
   const grade = scores.total >= 80 ? 'Excellent' : scores.total >= 60 ? 'Good' : scores.total >= 40 ? 'Needs Work' : 'Poor';
-  return `AI Readability: ${grade} (${scores.total}/100) across ${pageCount} page${pageCount > 1 ? 's' : ''}`;
+  return `Content readiness: ${grade} (${scores.total}/100) across ${pageCount} page${pageCount > 1 ? 's' : ''}`;
 }

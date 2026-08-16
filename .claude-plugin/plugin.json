@@ -1,12 +1,12 @@
 {
   "name": "aeoptimize",
-  "description": "AI search optimization toolkit: scan, generate, and transform website content for AI readability",
-  "version": "0.5.3",
+  "description": "Content-readiness lint and evidence-bounded discovery experiments",
+  "version": "0.6.0",
   "author": {
     "name": "Te-Shu Wang"
   },
-  "homepage": "https://github.com/dexuwang627-cloud/aeoptimize",
-  "repository": "https://github.com/dexuwang627-cloud/aeoptimize",
+  "homepage": "https://github.com/cucuwang/aeoptimize",
+  "repository": "https://github.com/cucuwang/aeoptimize",
   "license": "MIT",
   "keywords": ["aeo", "seo", "ai-search", "llms-txt", "structured-data", "claude-code-skill"],
   "commands": [

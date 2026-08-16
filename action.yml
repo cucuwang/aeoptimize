@@ -1,5 +1,5 @@
 name: aeoptimize Content Readiness Check
-description: Compatibility path for the root aeoptimize readiness Action
+description: Run the deterministic aeoptimize readiness lint against a build directory
 branding:
   icon: search
   color: blue
@@ -51,4 +51,4 @@ runs:
         INPUT_PATH: ${{ inputs.path }}
         MIN_SCORE: ${{ inputs.min-score }}
         FAIL_ON_LOW_SCORE: ${{ inputs.fail-on-low-score }}
-      run: bash "${{ github.action_path }}/run.sh"
+      run: bash "${{ github.action_path }}/action/run.sh"

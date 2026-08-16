@@ -141,10 +141,10 @@ describe('json-ld-presence', () => {
     expect(result.score).toBe(result.maxScore);
   });
 
-  it('gives zero when no JSON-LD', () => {
+  it('treats missing JSON-LD as optional rather than critical', () => {
     const result = rule.evaluate(makeDoc());
-    expect(result.score).toBe(0);
-    expect(result.issues[0].severity).toBe('critical');
+    expect(result.score).toBe(result.maxScore);
+    expect(result.issues[0].severity).toBe('info');
   });
 });
 
@@ -155,8 +155,8 @@ describe('self-contained-statements', () => {
     const doc = makeDoc({
       paragraphs: [
         'AEO stands for Answer Engine Optimization.',
-        'The practice focuses on AI search readiness.',
-        'Structured data improves AI citation rates.',
+        'The practice focuses on reproducible content readiness.',
+        'Structured data should match visible page content.',
       ],
     });
     const result = rule.evaluate(doc);
@@ -183,7 +183,7 @@ describe('meta-description-quality', () => {
 
   it('gives full score for good meta description', () => {
     const doc = makeDoc({
-      metaTags: { description: 'AEO is the practice of optimizing content for AI search engines. Learn strategies for better AI citations.' },
+      metaTags: { description: 'A page-specific introduction to content-readiness checks, evidence classes, and implementation limits.' },
     });
     const result = rule.evaluate(doc);
     expect(result.score).toBe(result.maxScore);

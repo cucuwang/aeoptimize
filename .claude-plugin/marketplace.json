@@ -4,18 +4,18 @@
     "name": "Te-Shu Wang"
   },
   "metadata": {
-    "description": "AI search optimization: scan, generate, and transform website content for AI readability",
-    "version": "0.5.3"
+    "description": "Content-readiness lint with evidence-bounded AI discovery experiments",
+    "version": "0.6.0"
   },
   "plugins": [
     {
       "name": "aeoptimize",
       "source": "./",
-      "description": "CLI toolkit + Claude Code skills for transforming SEO-optimized websites into AI-search-ready content",
+      "description": "CLI and Claude Code skills for reproducible content-readiness checks",
       "category": "seo",
       "tags": ["aeo", "seo", "ai-search", "llms-txt", "structured-data"],
-      "homepage": "https://github.com/dexuwang627-cloud/aeoptimize",
-      "repository": "https://github.com/dexuwang627-cloud/aeoptimize"
+      "homepage": "https://github.com/cucuwang/aeoptimize",
+      "repository": "https://github.com/cucuwang/aeoptimize"
     }
   ]
 }

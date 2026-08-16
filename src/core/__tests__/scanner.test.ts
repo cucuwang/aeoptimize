@@ -16,13 +16,13 @@ describe('parseHtml', () => {
     const html = await readFile(join(fixtures, 'good-page.html'), 'utf-8');
     const doc = parseHtml(html, 'https://example.com/aeo-guide');
 
-    expect(doc.title).toBe('What is Answer Engine Optimization (AEO)? A Complete Guide');
+    expect(doc.title).toBe('What is Answer Engine Optimization (AEO)? An Evidence Guide');
     expect(doc.headings.length).toBeGreaterThan(3);
     expect(doc.headings[0]).toEqual({ level: 1, text: 'What is Answer Engine Optimization (AEO)?' });
     expect(doc.paragraphs.length).toBeGreaterThan(5);
-    expect(doc.jsonLd.length).toBe(3);
-    expect(doc.metaTags['description']).toContain('AEO');
-    expect(doc.metaTags['author']).toBe('Jane Smith');
+    expect(doc.jsonLd.length).toBe(2);
+    expect(doc.metaTags['description']).toContain('content readiness');
+    expect(doc.metaTags['author']).toBe('Fixture Author');
   });
 
   it('handles minimal HTML without crashing', () => {
@@ -39,7 +39,7 @@ describe('parseMarkdown', () => {
     const doc = parseMarkdown(md, 'llms-txt-guide.md');
 
     expect(doc.title).toBe('Getting Started with llms.txt');
-    expect(doc.frontmatter?.author).toBe('John Doe');
+    expect(doc.frontmatter?.author).toBe('Fixture Author');
     expect(doc.headings.length).toBeGreaterThan(3);
     expect(doc.headings[0]).toEqual({ level: 1, text: 'Getting Started with llms.txt' });
     expect(doc.paragraphs.length).toBeGreaterThan(3);
@@ -64,14 +64,18 @@ describe('scanDocument', () => {
     expect(result.issues.filter((i) => i.severity === 'critical')).toHaveLength(0);
   });
 
-  it('scores a poorly structured page below 40', async () => {
-    const html = await readFile(join(fixtures, 'bad-page.html'), 'utf-8');
-    const doc = parseHtml(html, 'https://example.com/seo-tips');
-    const result = scanDocument(doc);
+  it('scores the regression fixture below the evidence fixture', async () => {
+    const [goodHtml, regressionHtml] = await Promise.all([
+      readFile(join(fixtures, 'good-page.html'), 'utf-8'),
+      readFile(join(fixtures, 'bad-page.html'), 'utf-8'),
+    ]);
+    const good = scanDocument(parseHtml(goodHtml, 'https://example.com/evidence-guide'));
+    const regression = scanDocument(parseHtml(regressionHtml, 'https://example.com/seo-tips'));
 
-    expect(result.scores.total).toBeLessThanOrEqual(40);
-    expect(result.issues.length).toBeGreaterThan(0);
-    expect(result.suggestions.length).toBeGreaterThan(0);
+    expect(regression.scores.total).toBeLessThan(good.scores.total);
+    expect(regression.issues.some((issue) => issue.message.includes('No H1'))).toBe(true);
+    expect(regression.issues.some((issue) => issue.message.includes('No meta description'))).toBe(true);
+    expect(regression.suggestions.length).toBeGreaterThan(0);
   });
 
   it('returns all five dimension scores', async () => {
@@ -137,15 +141,12 @@ describe('scanUrl', () => {
         });
       }
 
-      if (url === 'https://example.com/llms.txt') {
-        return new Response(null, { status: 404 });
-      }
-
       throw new Error(`Unexpected fetch: ${url}`);
     });
 
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(scanUrl('https://example.com/')).rejects.toThrow('Scanning private/loopback addresses is not allowed.');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

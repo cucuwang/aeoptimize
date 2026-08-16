@@ -70,13 +70,14 @@ describe('generateJsonLd', () => {
     const doc: ParsedDocument = {
       url: 'test',
       title: 'Test Article',
+      html: '<article><h1>Test Article</h1><h2>Section One</h2><p>First paragraph.</p><p>Second paragraph.</p><p>Third paragraph.</p></article>',
       headings: [
         { level: 1, text: 'Test Article' },
         { level: 2, text: 'Section One' },
       ],
       paragraphs: ['First paragraph.', 'Second paragraph.', 'Third paragraph.'],
       jsonLd: [],
-      metaTags: { description: 'A test article', author: 'Jane' },
+      metaTags: { description: 'A test article', author: 'Jane', 'article:published_time': '2026-08-15' },
       links: [],
       rawText: 'Test content.',
     };
@@ -88,7 +89,26 @@ describe('generateJsonLd', () => {
     expect(article.author.name).toBe('Jane');
   });
 
-  it('generates FAQPage for question headings without existing FAQ schema', () => {
+  it('does not infer Article schema without explicit article metadata', () => {
+    const doc: ParsedDocument = {
+      url: 'test',
+      title: 'Generic Page',
+      html: '<main><h1>Generic Page</h1><h2>Details</h2></main>',
+      headings: [
+        { level: 1, text: 'Generic Page' },
+        { level: 2, text: 'Details' },
+      ],
+      paragraphs: ['First paragraph.', 'Second paragraph.', 'Third paragraph.'],
+      jsonLd: [],
+      metaTags: {},
+      links: [],
+      rawText: 'Generic content.',
+    };
+
+    expect(generateJsonLd(doc).some((item: any) => item['@type'] === 'Article')).toBe(false);
+  });
+
+  it('does not infer FAQPage schema from question headings', () => {
     const doc: ParsedDocument = {
       url: 'test',
       title: 'FAQ',
@@ -105,9 +125,8 @@ describe('generateJsonLd', () => {
     };
 
     const result = generateJsonLd(doc);
-    const faq = result.find((r: any) => r['@type'] === 'FAQPage') as any;
-    expect(faq).toBeTruthy();
-    expect(faq.mainEntity.length).toBe(2);
+    const faq = result.find((r: any) => r['@type'] === 'FAQPage');
+    expect(faq).toBeUndefined();
   });
 
   it('does not duplicate existing schema types', async () => {
@@ -115,7 +134,7 @@ describe('generateJsonLd', () => {
     const doc = parseHtml(html, 'test');
     const result = generateJsonLd(doc);
 
-    // good-page.html already has Article, FAQPage, BreadcrumbList
+    // Existing Article/BreadcrumbList are not duplicated; FAQPage is not inferred.
     const types = result.map((r: any) => r['@type']);
     expect(types).not.toContain('Article');
     expect(types).not.toContain('FAQPage');
@@ -145,5 +164,11 @@ describe('generateRobotsTxtSuggestions', () => {
 
     // Others should still appear
     expect(text).toContain('ClaudeBot');
+  });
+
+  it('does not claim that robots.txt should point crawlers to llms.txt', () => {
+    const text = generateRobotsTxtSuggestions(null).join('\n');
+    expect(text).not.toContain('llms.txt');
+    expect(text).not.toContain('rel="llms-txt"');
   });
 });
