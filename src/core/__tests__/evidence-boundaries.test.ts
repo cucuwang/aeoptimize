@@ -74,4 +74,23 @@ describe('public metadata', () => {
     expect(publicSurface).not.toContain('dexuwang627-cloud');
     expect(publicSurface).toContain('cucuwang/aeoptimize');
   });
+
+  it('keeps v0.6 package, CLI, plugin, and Action versions aligned', async () => {
+    const packageJson = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+    const pluginJson = JSON.parse(await readFile(join(root, '.claude-plugin/plugin.json'), 'utf8'));
+    const marketplaceJson = JSON.parse(await readFile(join(root, '.claude-plugin/marketplace.json'), 'utf8'));
+    const cli = await readFile(join(root, 'src/cli/index.ts'), 'utf8');
+    const action = await readFile(join(root, 'action.yml'), 'utf8');
+    const compatibilityAction = await readFile(join(root, 'action/action.yml'), 'utf8');
+
+    expect(packageJson.version).toBe('0.6.0');
+    expect(pluginJson.version).toBe(packageJson.version);
+    expect(marketplaceJson.metadata.version).toBe(packageJson.version);
+    expect(cli).toContain(`.version('${packageJson.version}')`);
+    expect(action).toContain(`default: 'aeoptimize@${packageJson.version}'`);
+    expect(action).toContain("fail-on-low-score:\n    description:");
+    expect(action).toContain("default: 'false'");
+    expect(compatibilityAction).toContain(`default: 'aeoptimize@${packageJson.version}'`);
+    expect(compatibilityAction).toContain("default: 'false'");
+  });
 });

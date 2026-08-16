@@ -1,6 +1,6 @@
 {
   "name": "aeoptimize",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "description": "Deterministic content-readiness lint for static websites and documentation",
   "type": "module",
   "main": "./dist/core/index.js",

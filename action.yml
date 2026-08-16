@@ -14,9 +14,13 @@ inputs:
     required: false
     default: '60'
   fail-on-low-score:
-    description: Fail when the readiness score is below min-score
+    description: Choose blocking mode and fail when the readiness score is below min-score
     required: false
-    default: 'true'
+    default: 'false'
+  package-spec:
+    description: npm package spec to install; keep the default outside prerelease testing
+    required: false
+    default: 'aeoptimize@0.6.0'
 
 outputs:
   score:
@@ -36,7 +40,9 @@ runs:
 
     - name: Install aeoptimize
       shell: bash
-      run: npm install --global aeoptimize@0.5.3
+      env:
+        PACKAGE_SPEC: ${{ inputs.package-spec }}
+      run: npm install --global "$PACKAGE_SPEC"
 
     - name: Run readiness scan
       id: scan
@@ -45,27 +51,4 @@ runs:
         INPUT_PATH: ${{ inputs.path }}
         MIN_SCORE: ${{ inputs.min-score }}
         FAIL_ON_LOW_SCORE: ${{ inputs.fail-on-low-score }}
-      run: |
-        case "$MIN_SCORE" in
-          ''|*[!0-9]*) echo "::error::min-score must be an integer from 0 to 100"; exit 2 ;;
-        esac
-        if [ "$MIN_SCORE" -lt 0 ] || [ "$MIN_SCORE" -gt 100 ]; then
-          echo "::error::min-score must be an integer from 0 to 100"
-          exit 2
-        fi
-
-        REPORT=$(aeoptimize scan "$INPUT_PATH" --dir --json 2>/dev/null)
-        SCORE=$(printf '%s' "$REPORT" | node -e "const fs=require('node:fs');const r=JSON.parse(fs.readFileSync(0,'utf8'));console.log(r.overall.total)")
-
-        echo "score=$SCORE" >> "$GITHUB_OUTPUT"
-        {
-          echo 'report<<AEOPTIMIZE_REPORT'
-          echo "$REPORT"
-          echo 'AEOPTIMIZE_REPORT'
-        } >> "$GITHUB_OUTPUT"
-
-        echo "::notice::aeoptimize readiness score: $SCORE/100 (project threshold: $MIN_SCORE)"
-        if [ "$FAIL_ON_LOW_SCORE" = 'true' ] && [ "$SCORE" -lt "$MIN_SCORE" ]; then
-          echo "::error::Readiness score $SCORE is below the project threshold $MIN_SCORE"
-          exit 1
-        fi
+      run: bash "${{ github.action_path }}/action/run.sh"

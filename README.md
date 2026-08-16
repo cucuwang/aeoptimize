@@ -61,7 +61,25 @@ npx aeoptimize scan ./dist --dir --json > aeoptimize-report.json
 node -e "const r=require('./aeoptimize-report.json'); process.exit(r.overall.total < 60 ? 1 : 0)"
 ```
 
-The repository also contains root GitHub Action metadata for the v0.6 release line. Until a v0.6 tag is published, use the CLI directly rather than pinning an unreleased Action reference.
+The v0.6 GitHub Action is advisory by default. It reports findings without blocking the workflow:
+
+```yaml
+- uses: cucuwang/aeoptimize@v0.6.0
+  with:
+    path: dist
+```
+
+Projects can explicitly choose blocking mode after accepting a baseline:
+
+```yaml
+- uses: cucuwang/aeoptimize@v0.6.0
+  with:
+    path: dist
+    fail-on-low-score: 'true'
+    min-score: '60'
+```
+
+The Action exposes `score` and `report` outputs in both modes. Its release is reproducible only when the Action tag and matching npm package version both exist. Until `v0.6.0` is published in both places, use the CLI directly rather than pinning the unreleased Action reference.
 
 ## Optional generators
 

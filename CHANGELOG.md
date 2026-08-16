@@ -13,6 +13,7 @@ All notable user-visible changes will be documented here. The project follows Se
 - Stopped inferring `FAQPage` structured data from question headings.
 - Limited CI support to maintained Node.js LTS lines and refreshed dependencies.
 - Added methodology, contribution, security, roadmap, and root GitHub Action files.
+- Made the GitHub Action advisory by default, with explicit blocking mode, version-matched package installation, stable outputs, and contract fixtures.
 
 ### Security
 
