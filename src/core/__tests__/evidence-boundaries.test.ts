@@ -93,4 +93,15 @@ describe('public metadata', () => {
     expect(compatibilityAction).toContain(`default: 'aeoptimize@${packageJson.version}'`);
     expect(compatibilityAction).toContain("default: 'false'");
   });
+
+  it('keeps npm publisher metadata normalized and exposes every CLI alias', async () => {
+    const packageJson = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+
+    expect(packageJson.repository.url).toBe('git+https://github.com/cucuwang/aeoptimize.git');
+    expect(packageJson.bin).toEqual({
+      aeoptimize: 'dist/cli/index.js',
+      aeo: 'dist/cli/index.js',
+      'aeo-cli': 'dist/cli/index.js',
+    });
+  });
 });

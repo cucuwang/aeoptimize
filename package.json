@@ -5,9 +5,9 @@
   "type": "module",
   "main": "./dist/core/index.js",
   "bin": {
-    "aeoptimize": "./dist/cli/index.js",
-    "aeo": "./dist/cli/index.js",
-    "aeo-cli": "./dist/cli/index.js"
+    "aeoptimize": "dist/cli/index.js",
+    "aeo": "dist/cli/index.js",
+    "aeo-cli": "dist/cli/index.js"
   },
   "exports": {
     ".": "./dist/core/index.js",
@@ -50,7 +50,7 @@
   "homepage": "https://github.com/cucuwang/aeoptimize",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cucuwang/aeoptimize.git"
+    "url": "git+https://github.com/cucuwang/aeoptimize.git"
   },
   "bugs": {
     "url": "https://github.com/cucuwang/aeoptimize/issues"
