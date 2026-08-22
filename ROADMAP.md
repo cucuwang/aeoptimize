@@ -14,6 +14,8 @@ Release gates:
 - root GitHub Action metadata and an end-to-end sample repository;
 - stable JSON output, changelog, release notes, and rollback instructions.
 
+The release gates are enforced by `src/core/__tests__/release-contract.test.ts`, the versioned corpus in `fixtures/v0.6/`, the copyable sample in `examples/github-action-sample/`, and the release runbook in `docs/release-v0.6.md`.
+
 ## Product validation after v0.6
 
 - Validate one core workflow: static site or documentation CI content-readiness lint.

@@ -50,7 +50,7 @@ Two often-promoted AEO signals are deliberately excluded from the score:
 - FAQ content and `FAQPage` schema are optional. The generator does not infer FAQ schema from question headings.
 - `llms.txt` is an experimental proposal. Generating or publishing it does not add points.
 
-Every rule, its evidence class, and known false-positive boundary is documented in [docs/methodology.md](docs/methodology.md).
+Every rule, its evidence class, and known false-positive boundary is documented in [docs/methodology.md](docs/methodology.md) and exercised by the [versioned public fixture corpus](fixtures/v0.6/rule-corpus.ts).
 
 ## CI contract
 
@@ -80,6 +80,8 @@ Projects can explicitly choose blocking mode after accepting a baseline:
 ```
 
 The Action exposes `score` and `report` outputs in both modes. Its release is reproducible only when the Action tag and matching npm package version both exist. Before pinning a version, verify both artifacts; if either is missing, use the CLI directly.
+
+A copyable advisory workflow and controlled input are available in the [end-to-end Action sample](examples/github-action-sample/README.md).
 
 ## Optional generators
 
@@ -149,7 +151,7 @@ claude plugin marketplace add cucuwang/aeoptimize
 
 ## Project status
 
-The next evidence release focuses on methodology, reproducible fixtures, CI compatibility, packaging, and external adoption—not more scoring rules. See [ROADMAP.md](ROADMAP.md).
+The v0.6 evidence baseline focuses on methodology, reproducible fixtures, CI compatibility, packaging, and external adoption—not more scoring rules. Release acceptance and rollback are documented in [docs/release-v0.6.md](docs/release-v0.6.md); longer-term adoption work remains in [ROADMAP.md](ROADMAP.md).
 
 Contributions are welcome. Rule changes require an evidence note and positive/negative fixtures; see [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities through the process in [SECURITY.md](SECURITY.md).
 

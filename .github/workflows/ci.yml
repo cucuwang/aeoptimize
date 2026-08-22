@@ -68,6 +68,23 @@ jobs:
           esac
           node -e "const r=JSON.parse(process.env.REPORT);if(r.overall.total!==Number(process.env.SCORE))process.exit(1)"
 
+      - name: Run the copyable end-to-end sample
+        id: sample
+        uses: ./
+        with:
+          path: examples/github-action-sample/site
+          package-spec: ./aeoptimize-0.6.0.tgz
+
+      - name: Validate sample outputs
+        env:
+          SCORE: ${{ steps.sample.outputs.score }}
+          REPORT: ${{ steps.sample.outputs.report }}
+        run: |
+          case "$SCORE" in
+            ''|*[!0-9]*) echo "Invalid sample score: $SCORE"; exit 1 ;;
+          esac
+          node -e "const r=JSON.parse(process.env.REPORT);if(r.pages.length!==1||r.overall.total!==Number(process.env.SCORE))process.exit(1)"
+
       - name: Blocking mode passes at an accepted threshold
         id: blocking-passes
         uses: ./
