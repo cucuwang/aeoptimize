@@ -1,6 +1,6 @@
 # Methodology and limitations
 
-This document describes the v0.6 draft scoring contract. `aeoptimize` is a deterministic content-readiness linter. Its score is not a forecast of ranking, indexing, rich-result eligibility, AI visibility, or citation.
+This document describes the v0.6.0 scoring contract. `aeoptimize` is a deterministic content-readiness linter. Its score is not a forecast of ranking, indexing, rich-result eligibility, AI visibility, or citation.
 
 ## Evidence classes
 
@@ -64,7 +64,7 @@ A scoring-rule change must include:
 3. the expected JSON change and migration impact;
 4. no claim that the rule improves ranking or citation without a preregistered outcome study and public data.
 
-The v0.6 evidence release will version a public fixture corpus and publish rule-level change notes. Outcome research, if added later, will be reported separately from the readiness score.
+The v0.6 fixture corpus is published in [`fixtures/v0.6/rule-corpus.ts`](../fixtures/v0.6/rule-corpus.ts) and is enforced by the release-contract tests. Outcome research, if added later, will be reported separately from the readiness score.
 
 ## Primary sources
 
@@ -75,4 +75,4 @@ The v0.6 evidence release will version a public fixture corpus and publish rule-
 - [Google Search: robots meta tag](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag)
 - [llms.txt proposal](https://llmstxt.org/)
 
-Last reviewed: 2026-08-15.
+Last reviewed: 2026-08-22.
