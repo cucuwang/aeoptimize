@@ -8,7 +8,7 @@ Before publication, verify all of the following from the intended release commit
 
 1. `npm ci`, `npm run check`, `npm audit --audit-level=high`, and `bash action/test-contract.sh` pass.
 2. The public v0.6 rule corpus covers the positive, negative, and false-positive boundary for every scored rule.
-3. `npm pack` is reproducible and a clean consumer can invoke `aeoptimize`, `aeo`, and `aeo-cli`.
+3. `npm pack` is reproducible, its SHA-256 is recorded, and a clean consumer can invoke `aeoptimize`, `aeo`, and `aeo-cli`.
 4. CI succeeds on Node.js 22 and 24 for the release commit.
 5. The JSON automation contract and Action sample tests pass.
 6. The npm account is verified immediately before publishing.
@@ -41,18 +41,21 @@ After an authorized npm publication:
 
 ```bash
 npm view aeoptimize version dist-tags --json
-npm install --prefix /tmp/aeoptimize-consumer aeoptimize@0.6.0
-/tmp/aeoptimize-consumer/node_modules/.bin/aeoptimize --version
-/tmp/aeoptimize-consumer/node_modules/.bin/aeo --version
-/tmp/aeoptimize-consumer/node_modules/.bin/aeo-cli --version
+npm view aeoptimize@0.6.0 version gitHead repository homepage bugs dist --json
+consumer_root=$(mktemp -d "${TMPDIR:-/tmp}/aeoptimize-v0.6-consumer.XXXXXX")
+npm install --prefix "$consumer_root" aeoptimize@0.6.0
+"$consumer_root/node_modules/.bin/aeoptimize" --version
+"$consumer_root/node_modules/.bin/aeo" --version
+"$consumer_root/node_modules/.bin/aeo-cli" --version
+rm -rf -- "$consumer_root"
 ```
 
 After separately authorized tag and GitHub Release creation, verify that `v0.6.0` points to the tested release commit and that the Release is published rather than draft or prerelease.
 
-The fail-closed public verifier checks npm `latest`, the exact version, all three installed CLI aliases, the tag target, and the published GitHub Release:
+The fail-closed public verifier checks npm `latest`, the exact version, public repository identity, `gitHead`, the downloaded tarball SHA-256, all three installed CLI aliases, the tag target, and the published GitHub Release:
 
 ```bash
-bash scripts/verify-release-v0.6.sh <verified-release-commit>
+bash scripts/verify-release-v0.6.sh <verified-release-commit> <verified-package-sha256>
 ```
 
 ## Rollback

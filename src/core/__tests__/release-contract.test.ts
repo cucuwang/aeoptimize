@@ -92,6 +92,7 @@ describe('v0.6 JSON automation contract', () => {
   it('ships release and rollback instructions with the package', async () => {
     const packageJson = JSON.parse(await readFile(join(repositoryRoot, 'package.json'), 'utf8'));
     const releaseGuide = await readFile(join(repositoryRoot, 'docs/release-v0.6.md'), 'utf8');
+    const publicVerifier = await readFile(join(repositoryRoot, 'scripts/verify-release-v0.6.sh'), 'utf8');
 
     expect(packageJson.files).toContain('docs/release-v0.6.md');
     expect(packageJson.files).toContain('fixtures/');
@@ -99,5 +100,10 @@ describe('v0.6 JSON automation contract', () => {
     expect(packageJson.files).toContain('scripts/verify-release-v0.6.sh');
     expect(releaseGuide).toContain('## Rollback');
     expect(releaseGuide).toContain('npm dist-tag add aeoptimize@0.5.3 latest');
+    expect(releaseGuide).toContain('<verified-package-sha256>');
+    expect(publicVerifier).toContain('.gitHead');
+    expect(publicVerifier).toContain('EXPECTED_REPOSITORY_URL');
+    expect(publicVerifier).toContain('.dist.tarball');
+    expect(publicVerifier).toContain('EXPECTED_PACKAGE_SHA256');
   });
 });

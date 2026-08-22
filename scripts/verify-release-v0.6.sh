@@ -6,13 +6,27 @@ EXPECTED_VERSION=0.6.0
 EXPECTED_TAG=v0.6.0
 REPOSITORY=cucuwang/aeoptimize
 EXPECTED_COMMIT=${1:-}
+EXPECTED_PACKAGE_SHA256=${2:-}
+EXPECTED_REPOSITORY_URL=git+https://github.com/cucuwang/aeoptimize.git
+EXPECTED_HOMEPAGE=https://github.com/cucuwang/aeoptimize
+EXPECTED_BUGS_URL=https://github.com/cucuwang/aeoptimize/issues
 
-if [ -z "$EXPECTED_COMMIT" ]; then
-  echo "usage: $0 <expected-release-commit>" >&2
+if [ -z "$EXPECTED_COMMIT" ] || [ -z "$EXPECTED_PACKAGE_SHA256" ]; then
+  echo "usage: $0 <expected-release-commit> <expected-package-sha256>" >&2
   exit 2
 fi
 
-for command_name in awk curl jq npm git mktemp; do
+if ! [[ "$EXPECTED_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "expected-release-commit must be a lowercase 40-character Git SHA" >&2
+  exit 2
+fi
+
+if ! [[ "$EXPECTED_PACKAGE_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
+  echo "expected-package-sha256 must be a lowercase 64-character SHA-256" >&2
+  exit 2
+fi
+
+for command_name in awk curl jq npm git mktemp node; do
   if ! command -v "$command_name" >/dev/null 2>&1; then
     echo "missing required command: $command_name" >&2
     exit 2
@@ -24,6 +38,7 @@ VERIFY_BASE=${VERIFY_BASE%/}
 VERIFY_ROOT=$(mktemp -d "$VERIFY_BASE/aeoptimize-release-verify.XXXXXX")
 REGISTRY_JSON="$VERIFY_ROOT/registry.json"
 RELEASE_JSON="$VERIFY_ROOT/release.json"
+PACKAGE_TARBALL="$VERIFY_ROOT/$PACKAGE_NAME-$EXPECTED_VERSION.tgz"
 CONSUMER_ROOT="$VERIFY_ROOT/consumer"
 FAILURES=0
 
@@ -64,6 +79,37 @@ if curl -fsS "https://registry.npmjs.org/$PACKAGE_NAME" > "$REGISTRY_JSON"; then
 
   if jq -e --arg version "$EXPECTED_VERSION" '.versions[$version] != null' "$REGISTRY_JSON" >/dev/null; then
     pass "npm contains exact version $EXPECTED_VERSION"
+
+    published_git_head=$(jq -r --arg version "$EXPECTED_VERSION" '.versions[$version].gitHead // empty' "$REGISTRY_JSON")
+    if [ "$published_git_head" = "$EXPECTED_COMMIT" ]; then
+      pass "npm gitHead matches $EXPECTED_COMMIT"
+    else
+      fail "npm gitHead is ${published_git_head:-missing}; expected $EXPECTED_COMMIT"
+    fi
+
+    published_repository=$(jq -r --arg version "$EXPECTED_VERSION" '(.versions[$version].repository | if type == "object" then .url else . end) // empty' "$REGISTRY_JSON")
+    published_homepage=$(jq -r --arg version "$EXPECTED_VERSION" '.versions[$version].homepage // empty' "$REGISTRY_JSON")
+    published_bugs=$(jq -r --arg version "$EXPECTED_VERSION" '.versions[$version].bugs.url // empty' "$REGISTRY_JSON")
+
+    if [ "$published_repository" = "$EXPECTED_REPOSITORY_URL" ] && \
+       [ "$published_homepage" = "$EXPECTED_HOMEPAGE" ] && \
+       [ "$published_bugs" = "$EXPECTED_BUGS_URL" ]; then
+      pass "npm repository identity matches $REPOSITORY"
+    else
+      fail "npm repository identity does not match $REPOSITORY"
+    fi
+
+    tarball_url=$(jq -r --arg version "$EXPECTED_VERSION" '.versions[$version].dist.tarball // empty' "$REGISTRY_JSON")
+    if [ -n "$tarball_url" ] && curl -fLsS "$tarball_url" -o "$PACKAGE_TARBALL"; then
+      package_sha256=$(node -e "const crypto=require('node:crypto');const fs=require('node:fs');const path=process.argv[1];console.log(crypto.createHash('sha256').update(fs.readFileSync(path)).digest('hex'))" "$PACKAGE_TARBALL")
+      if [ "$package_sha256" = "$EXPECTED_PACKAGE_SHA256" ]; then
+        pass "npm tarball SHA-256 matches the verified candidate"
+      else
+        fail "npm tarball SHA-256 is ${package_sha256:-missing}; expected $EXPECTED_PACKAGE_SHA256"
+      fi
+    else
+      fail "npm tarball could not be downloaded for SHA-256 verification"
+    fi
 
     if npm --cache "$VERIFY_ROOT/npm-cache" install \
       --ignore-scripts --no-audit --no-fund \
