@@ -64,6 +64,10 @@ pass() {
   echo "PASS: $1"
 }
 
+note() {
+  echo "INFO: $1"
+}
+
 fail() {
   echo "FAIL: $1" >&2
   FAILURES=$((FAILURES + 1))
@@ -81,10 +85,12 @@ if curl -fsS "https://registry.npmjs.org/$PACKAGE_NAME" > "$REGISTRY_JSON"; then
     pass "npm contains exact version $EXPECTED_VERSION"
 
     published_git_head=$(jq -r --arg version "$EXPECTED_VERSION" '.versions[$version].gitHead // empty' "$REGISTRY_JSON")
-    if [ "$published_git_head" = "$EXPECTED_COMMIT" ]; then
+    if [ -z "$published_git_head" ]; then
+      note "npm does not expose gitHead; tarball SHA-256 remains the artifact identity gate"
+    elif [ "$published_git_head" = "$EXPECTED_COMMIT" ]; then
       pass "npm gitHead matches $EXPECTED_COMMIT"
     else
-      fail "npm gitHead is ${published_git_head:-missing}; expected $EXPECTED_COMMIT"
+      fail "npm gitHead is $published_git_head; expected $EXPECTED_COMMIT"
     fi
 
     published_repository=$(jq -r --arg version "$EXPECTED_VERSION" '(.versions[$version].repository | if type == "object" then .url else . end) // empty' "$REGISTRY_JSON")

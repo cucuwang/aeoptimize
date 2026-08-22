@@ -52,7 +52,7 @@ rm -rf -- "$consumer_root"
 
 After separately authorized tag and GitHub Release creation, verify that `v0.6.0` points to the tested release commit and that the Release is published rather than draft or prerelease.
 
-The fail-closed public verifier checks npm `latest`, the exact version, public repository identity, `gitHead`, the downloaded tarball SHA-256, all three installed CLI aliases, the tag target, and the published GitHub Release:
+The fail-closed public verifier checks npm `latest`, the exact version, public repository identity, the downloaded tarball SHA-256, all three installed CLI aliases, the tag target, and the published GitHub Release. The tarball hash is the required artifact-identity gate. If npm exposes `gitHead`, it must match the expected release commit; absence is reported as informational because npm's publish contract guarantees tarball integrity but does not guarantee that metadata field.
 
 ```bash
 bash scripts/verify-release-v0.6.sh <verified-release-commit> <verified-package-sha256>

@@ -19,13 +19,14 @@ interface CommandResult {
   stderr: string;
 }
 
-function runVerifier(mockBin: string, packageHash: string): Promise<CommandResult> {
+function runVerifier(mockBin: string, packageHash: string, npmGitHead = expectedCommit): Promise<CommandResult> {
   return new Promise((resolve, reject) => {
     const child = spawn('bash', [verifier, expectedCommit, packageHash], {
       env: {
         ...process.env,
         PATH: `${mockBin}:${process.env.PATH}`,
-        MOCK_GIT_HEAD: expectedCommit,
+        MOCK_NPM_GIT_HEAD: npmGitHead,
+        MOCK_TAG_COMMIT: expectedCommit,
         MOCK_TARBALL_CONTENT: tarballContent,
       },
     });
@@ -68,7 +69,7 @@ done
 
 case "$url" in
   https://registry.npmjs.org/aeoptimize)
-    printf '{"dist-tags":{"latest":"0.6.0"},"versions":{"0.6.0":{"gitHead":"%s","repository":{"url":"git+https://github.com/cucuwang/aeoptimize.git"},"homepage":"https://github.com/cucuwang/aeoptimize","bugs":{"url":"https://github.com/cucuwang/aeoptimize/issues"},"dist":{"tarball":"https://registry.npmjs.org/aeoptimize/-/aeoptimize-0.6.0.tgz"}}}}' "$MOCK_GIT_HEAD"
+    printf '{"dist-tags":{"latest":"0.6.0"},"versions":{"0.6.0":{"gitHead":"%s","repository":{"url":"git+https://github.com/cucuwang/aeoptimize.git"},"homepage":"https://github.com/cucuwang/aeoptimize","bugs":{"url":"https://github.com/cucuwang/aeoptimize/issues"},"dist":{"tarball":"https://registry.npmjs.org/aeoptimize/-/aeoptimize-0.6.0.tgz"}}}}' "$MOCK_NPM_GIT_HEAD"
     ;;
   https://registry.npmjs.org/aeoptimize/-/aeoptimize-0.6.0.tgz)
     printf '%s' "$MOCK_TARBALL_CONTENT" > "$output_file"
@@ -86,7 +87,7 @@ esac
 
     await writeExecutable(join(mockBin, 'git'), `#!/usr/bin/env bash
 set -euo pipefail
-printf '%s\trefs/tags/v0.6.0\n' "$MOCK_GIT_HEAD"
+printf '%s\trefs/tags/v0.6.0\n' "$MOCK_TAG_COMMIT"
 `);
 
     await writeExecutable(join(mockBin, 'npm'), `#!/usr/bin/env bash
@@ -127,5 +128,21 @@ done
     expect(result.code).toBe(1);
     expect(result.stderr).toContain('FAIL: npm tarball SHA-256 is');
     expect(result.stdout).not.toContain('All public release checks passed.');
+  });
+
+  it('accepts a missing optional gitHead when the tarball identity matches', async () => {
+    const result = await runVerifier(mockBin, expectedTarballHash, '');
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('INFO: npm does not expose gitHead');
+    expect(result.stdout).toContain('PASS: npm tarball SHA-256 matches the verified candidate');
+  });
+
+  it('fails closed when npm exposes a different gitHead', async () => {
+    const differentCommit = 'fedcba9876543210fedcba9876543210fedcba98';
+    const result = await runVerifier(mockBin, expectedTarballHash, differentCommit);
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain(`FAIL: npm gitHead is ${differentCommit}`);
   });
 });
