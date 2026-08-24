@@ -19,18 +19,19 @@
 
   <text x="72" y="228" font-family="'Helvetica Neue', Arial, sans-serif" font-size="92" font-weight="bold" fill="#f2f4f8">aeoptimize</text>
 
-  <text x="72" y="286" font-family="'Helvetica Neue', Arial, sans-serif" font-size="29" fill="#98a0b3">AI crawlers read your pages before humans do.</text>
-  <text x="72" y="330" font-family="'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="600" fill="#ffffff">Lint your docs like code.</text>
+  <text x="72" y="286" font-family="'Helvetica Neue', Arial, sans-serif" font-size="28" fill="#98a0b3">AI crawlers read your pages</text>
+  <text x="72" y="326" font-family="'Helvetica Neue', Arial, sans-serif" font-size="28" fill="#98a0b3">before humans do.</text>
+  <text x="72" y="372" font-family="'Helvetica Neue', Arial, sans-serif" font-size="32" font-weight="600" fill="#ffffff">Lint your docs like code.</text>
 
   <g font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" fill="#aab3c7">
-    <rect x="72"  y="376" width="86"  height="42" rx="21" fill="#1d2029" stroke="#2c3242"/>
-    <text x="115" y="403" text-anchor="middle">MIT</text>
-    <rect x="172" y="376" width="86"  height="42" rx="21" fill="#1d2029" stroke="#2c3242"/>
-    <text x="215" y="403" text-anchor="middle">Free</text>
-    <rect x="272" y="376" width="94"  height="42" rx="21" fill="#1d2029" stroke="#2c3242"/>
-    <text x="319" y="403" text-anchor="middle">Local</text>
-    <rect x="380" y="376" width="112" height="42" rx="21" fill="#1d2029" stroke="#2c3242"/>
-    <text x="436" y="403" text-anchor="middle">CI-ready</text>
+    <rect x="72"  y="420" width="86"  height="42" rx="21" fill="#1d2029" stroke="#2c3242"/>
+    <text x="115" y="447" text-anchor="middle">MIT</text>
+    <rect x="172" y="420" width="86"  height="42" rx="21" fill="#1d2029" stroke="#2c3242"/>
+    <text x="215" y="447" text-anchor="middle">Free</text>
+    <rect x="272" y="420" width="94"  height="42" rx="21" fill="#1d2029" stroke="#2c3242"/>
+    <text x="319" y="447" text-anchor="middle">Local</text>
+    <rect x="380" y="420" width="112" height="42" rx="21" fill="#1d2029" stroke="#2c3242"/>
+    <text x="436" y="447" text-anchor="middle">CI-ready</text>
   </g>
 
   <rect x="660" y="100" width="548" height="420" rx="16" fill="#0e1117" stroke="#262c3a" stroke-width="2"/>
