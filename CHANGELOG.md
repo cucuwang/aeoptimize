@@ -2,6 +2,14 @@
 
 All notable user-visible changes will be documented here. The project follows Semantic Versioning after the v0.6 evidence baseline is released.
 
+## 0.6.2
+
+### Fixed
+
+- Added a fail-closed publish source gate that requires `HEAD` to match the fetched `origin/main` commit before npm publication.
+- Prepared a corrective release after npm 0.6.1 exposed the pre-squash PR commit as `gitHead`; the verified package contents were correct, but the release provenance did not match the merged commit.
+- Kept scoring rules, output contracts, and runtime behavior unchanged.
+
 ## 0.6.1
 
 ### Fixed

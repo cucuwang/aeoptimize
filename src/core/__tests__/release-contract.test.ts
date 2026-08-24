@@ -185,9 +185,12 @@ describe('v0.6 JSON automation contract', () => {
     expect(packageJson.files).toContain('fixtures/');
     expect(packageJson.files).toContain('examples/github-action-sample/');
     expect(packageJson.files).toContain('scripts/verify-release-candidate.sh');
+    expect(packageJson.files).toContain('scripts/verify-publish-source.sh');
     expect(packageJson.files).toContain('scripts/verify-release-v0.6.sh');
     expect(packageJson.scripts['release:check']).toBe('bash scripts/verify-release-candidate.sh');
-    expect(packageJson.scripts.prepublishOnly).toBe('npm run release:check');
+    expect(packageJson.scripts.prepublishOnly).toBe(
+      'npm run release:check && bash scripts/verify-publish-source.sh',
+    );
     expect(releaseGuide).toContain('## Rollback');
     expect(releaseGuide).toContain('npm dist-tag add aeoptimize@0.6.0 latest');
     expect(releaseGuide).toContain('<verified-package-sha256>');
