@@ -145,6 +145,12 @@ The hook checks staged `.html`, `.htm`, `.md`, and `.mdx` content. Review the ba
 claude plugin marketplace add cucuwang/aeoptimize
 ```
 
+Or install the same reusable skills through the cross-agent Agent Skills CLI:
+
+```bash
+npx skills add cucuwang/aeoptimize
+```
+
 - `/aeo-scan` — deterministic readiness audit with optional experimental review
 - `/aeo-generate` — preview optional discovery artifacts
 - `/aeo-transform` — propose content edits without inventing claims
