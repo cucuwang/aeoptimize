@@ -4,15 +4,21 @@
 [![CI](https://github.com/cucuwang/aeoptimize/actions/workflows/ci.yml/badge.svg)](https://github.com/cucuwang/aeoptimize/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/aeoptimize.svg)](https://github.com/cucuwang/aeoptimize/blob/main/LICENSE)
 
-Deterministic content-readiness lint for static websites and documentation.
+**AI crawlers read your pages before humans do. Lint them like code.**
 
-`aeoptimize` checks reproducible properties such as document structure, sourced quantitative claims, structured-data hygiene, indexing controls, metadata quality, and repetitive wording. It is intended for local development and CI regression checks.
+`aeoptimize` is a deterministic content-readiness lint for static websites and documentation. It checks reproducible properties such as document structure, sourced quantitative claims, structured-data hygiene, indexing controls, metadata quality, and repetitive wording — locally, in CI, or pre-commit.
+
+![aeoptimize terminal demo](docs/assets/demo.gif)
 
 It does **not** predict ranking, indexing, rich results, Google AI Overviews, or citation by ChatGPT, Perplexity, or another AI system. Google states that its AI search features need no special AI text file or schema, and valid structured data does not guarantee a search feature. See [methodology and limitations](docs/methodology.md).
 
 ## Quick start
 
 Requires Node.js 22.12 or newer.
+
+```bash
+npm install --save-dev aeoptimize
+```
 
 ```bash
 npx aeoptimize scan https://example.com
@@ -51,6 +57,18 @@ Two often-promoted AEO signals are deliberately excluded from the score:
 - `llms.txt` is an experimental proposal. Generating or publishing it does not add points.
 
 Every rule, its evidence class, and known false-positive boundary is documented in [docs/methodology.md](docs/methodology.md) and exercised by the [versioned public fixture corpus](fixtures/v0.6/rule-corpus.ts).
+
+## How it compares
+
+| | aeoptimize | Lighthouse-style SEO audits | Hosted AEO/GEO platforms |
+| --- | --- | --- | --- |
+| Question it answers | Is this content machine-readable and citable? | Does the page pass classic SEO checks? | Did my AI visibility change this week? |
+| Deterministic | Yes — versioned rules, fixture-tested | Partially | No — model output varies run to run |
+| Runs where | Local CLI, CI, pre-commit hook, Vite/Next plugins | Browser / DevTools | Vendor cloud |
+| Blocks regressions in CI | Yes, via a stable `--json` contract | Possible with extra wiring | Rarely |
+| Cost | Free, MIT | Free | Typically $95+/mo |
+
+Visibility trackers answer "did rankings change?". aeoptimize answers the question you can act on in a pull request: "is this page ready?". The two compose rather than compete.
 
 ## CI contract
 
@@ -164,3 +182,5 @@ Contributions are welcome. Rule changes require an evidence note and positive/ne
 ## License
 
 MIT
+
+If aeoptimize catches something real in your build, a star helps other teams find it.
