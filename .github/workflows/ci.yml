@@ -19,11 +19,39 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: bash action/test-contract.sh
-      - run: npm pack --dry-run
-      - run: npm audit --audit-level=high
+      - run: npm run release:check
+        env:
+          RELEASE_MANIFEST_OUT: ${{ runner.temp }}/release-candidate-node-${{ matrix.node-version }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-node-${{ matrix.node-version }}
+          path: ${{ runner.temp }}/release-candidate-node-${{ matrix.node-version }}.json
+          if-no-files-found: error
+
+  release-candidate-reproducibility:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-candidate-node-*
+          path: release-candidates
+          merge-multiple: true
+      - name: Require byte-identical Node 22 and Node 24 candidates
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const files = fs.readdirSync('release-candidates').sort();
+          if (files.length !== 2) throw new Error(`expected two candidate manifests, found ${files.length}`);
+          const manifests = files.map((file) => JSON.parse(fs.readFileSync(path.join('release-candidates', file), 'utf8')));
+          for (const field of ['version', 'filename', 'sha256', 'fileCount', 'unpackedSize']) {
+            if (manifests[0][field] !== manifests[1][field]) {
+              throw new Error(`${field} differs across Node 22 and Node 24 candidates`);
+            }
+          }
+          console.log(`reproducible candidate ${manifests[0].filename} sha256=${manifests[0].sha256}`);
+          NODE
 
   lint-readme-commands:
     runs-on: ubuntu-latest
@@ -68,7 +96,7 @@ jobs:
           esac
           node -e "const r=JSON.parse(process.env.REPORT);if(r.overall.total!==Number(process.env.SCORE))process.exit(1)"
 
-      - name: Run the copyable end-to-end sample
+      - name: Run the sample site through the local composite Action
         id: sample
         uses: ./
         with:

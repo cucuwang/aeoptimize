@@ -119,7 +119,7 @@ if curl -fsS "https://registry.npmjs.org/$PACKAGE_NAME" > "$REGISTRY_JSON"; then
 
     if npm --cache "$VERIFY_ROOT/npm-cache" install \
       --ignore-scripts --no-audit --no-fund \
-      --prefix "$CONSUMER_ROOT" "$PACKAGE_NAME@$EXPECTED_VERSION" >/dev/null; then
+      --prefix "$CONSUMER_ROOT" "$PACKAGE_TARBALL" >/dev/null; then
       for binary in aeoptimize aeo aeo-cli; do
         binary_version=$("$CONSUMER_ROOT/node_modules/.bin/$binary" --version 2>/dev/null || true)
         if [ "$binary_version" = "$EXPECTED_VERSION" ]; then
@@ -129,7 +129,7 @@ if curl -fsS "https://registry.npmjs.org/$PACKAGE_NAME" > "$REGISTRY_JSON"; then
         fi
       done
     else
-      fail "clean consumer installation failed for $PACKAGE_NAME@$EXPECTED_VERSION"
+      fail "clean consumer installation failed for the verified package tarball"
     fi
   else
     fail "npm does not contain exact version $EXPECTED_VERSION"

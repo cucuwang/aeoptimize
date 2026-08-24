@@ -14,7 +14,7 @@ Release gates:
 - root GitHub Action metadata and an end-to-end sample repository;
 - stable JSON output, changelog, release notes, and rollback instructions.
 
-The release gates are enforced by `src/core/__tests__/release-contract.test.ts`, the versioned corpus in `fixtures/v0.6/`, the copyable sample in `examples/github-action-sample/`, and the release runbook in `docs/release-v0.6.md`.
+The code-level gates are enforced by `npm run release:check`, `src/core/__tests__/release-contract.test.ts`, the versioned corpus in `fixtures/v0.6/`, and the local composite Action contract. CI compares real Node.js 22 and 24 package manifests and hashes. Repository rulesets and the release runbook remain separate maintainer controls.
 
 ## Product validation after v0.6
 

@@ -20,6 +20,7 @@
     "agents/",
     "fixtures/",
     "examples/github-action-sample/",
+    "scripts/verify-release-candidate.sh",
     "scripts/verify-release-v0.6.sh",
     ".claude-plugin/",
     "docs/methodology.md",
@@ -34,10 +35,11 @@
   "scripts": {
     "build": "tsc",
     "check": "npm test && npm run build",
+    "release:check": "bash scripts/verify-release-candidate.sh",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run check"
+    "prepublishOnly": "npm run release:check"
   },
   "keywords": [
     "aeo",

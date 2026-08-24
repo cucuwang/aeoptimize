@@ -4,14 +4,16 @@ Version 0.6.0 establishes the evidence-bounded scoring, packaging, and GitHub Ac
 
 ## Release acceptance
 
-Before publication, verify all of the following from the intended release commit:
+Before publication, run `npm ci` and `npm run release:check` from the intended release commit. The candidate gate verifies all of the following:
 
-1. `npm ci`, `npm run check`, `npm audit --audit-level=high`, and `bash action/test-contract.sh` pass.
+1. `npm run check`, `npm audit --audit-level=high`, and `bash action/test-contract.sh` pass.
 2. The public v0.6 rule corpus covers the positive, negative, and false-positive boundary for every scored rule.
-3. `npm pack` is reproducible, its SHA-256 is recorded, and a clean consumer can invoke `aeoptimize`, `aeo`, and `aeo-cli`.
+3. An actual `npm pack` candidate contains the required public files, its SHA-256 is recorded, and a clean consumer can invoke `aeoptimize`, `aeo`, and `aeo-cli` from that exact tarball.
 4. CI succeeds on Node.js 22 and 24 for the release commit.
 5. The JSON automation contract and Action sample tests pass.
 6. The npm account is verified immediately before publishing.
+
+CI runs the same candidate gate on Node.js 22 and 24 and compares version, filename, SHA-256, file count, and unpacked size. `prepublishOnly` invokes the candidate gate again and refuses a dirty worktree by default.
 
 Publishing, tagging, creating a GitHub Release, changing npm dist-tags, and deprecating a version are separate external mutations and require separate maintainer authorization.
 
