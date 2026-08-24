@@ -2,14 +2,22 @@
 set -u
 
 PACKAGE_NAME=aeoptimize
-EXPECTED_VERSION=0.6.0
-EXPECTED_TAG=v0.6.0
 REPOSITORY=cucuwang/aeoptimize
 EXPECTED_COMMIT=${1:-}
 EXPECTED_PACKAGE_SHA256=${2:-}
 EXPECTED_REPOSITORY_URL=git+https://github.com/cucuwang/aeoptimize.git
 EXPECTED_HOMEPAGE=https://github.com/cucuwang/aeoptimize
 EXPECTED_BUGS_URL=https://github.com/cucuwang/aeoptimize/issues
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+PACKAGE_JSON="$SCRIPT_DIR/../package.json"
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "missing required command: node" >&2
+  exit 2
+fi
+
+EXPECTED_VERSION=$(node -e "const fs=require('node:fs');const packageJson=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(packageJson.version)" "$PACKAGE_JSON")
+EXPECTED_TAG="v$EXPECTED_VERSION"
 
 if [ -z "$EXPECTED_COMMIT" ] || [ -z "$EXPECTED_PACKAGE_SHA256" ]; then
   echo "usage: $0 <expected-release-commit> <expected-package-sha256>" >&2
@@ -26,7 +34,7 @@ if ! [[ "$EXPECTED_PACKAGE_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
   exit 2
 fi
 
-for command_name in awk curl jq npm git mktemp node; do
+for command_name in awk curl jq npm git mktemp; do
   if ! command -v "$command_name" >/dev/null 2>&1; then
     echo "missing required command: $command_name" >&2
     exit 2

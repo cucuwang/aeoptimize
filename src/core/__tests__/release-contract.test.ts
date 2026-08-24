@@ -122,7 +122,7 @@ describe('v0.6 public rule fixture corpus', () => {
     });
   }
 
-  it('keeps the corpus, package, methodology, and Action sample on the same release version', async () => {
+  it('keeps the v0.6 scoring contract and Action sample aligned with the package release line', async () => {
     const packageJson = JSON.parse(await readFile(join(repositoryRoot, 'package.json'), 'utf8'));
     const methodology = await readFile(join(repositoryRoot, 'docs/methodology.md'), 'utf8');
     const sampleWorkflow = await readFile(
@@ -130,8 +130,8 @@ describe('v0.6 public rule fixture corpus', () => {
       'utf8',
     );
 
-    expect(ruleFixtureCorpusVersion).toBe(packageJson.version);
-    expect(methodology).toContain(`v${packageJson.version} scoring contract`);
+    expect(packageJson.version.split('.').slice(0, 2)).toEqual(ruleFixtureCorpusVersion.split('.').slice(0, 2));
+    expect(methodology).toContain(`v${ruleFixtureCorpusVersion} scoring contract`);
     expect(sampleWorkflow).toContain(`uses: cucuwang/aeoptimize@v${packageJson.version}`);
     expect(sampleWorkflow).toContain('permissions:\n  contents: read');
     expect(sampleWorkflow).toContain('path: site');
@@ -189,7 +189,7 @@ describe('v0.6 JSON automation contract', () => {
     expect(packageJson.scripts['release:check']).toBe('bash scripts/verify-release-candidate.sh');
     expect(packageJson.scripts.prepublishOnly).toBe('npm run release:check');
     expect(releaseGuide).toContain('## Rollback');
-    expect(releaseGuide).toContain('npm dist-tag add aeoptimize@0.5.3 latest');
+    expect(releaseGuide).toContain('npm dist-tag add aeoptimize@0.6.0 latest');
     expect(releaseGuide).toContain('<verified-package-sha256>');
     expect(publicVerifier).toContain('.gitHead');
     expect(publicVerifier).toContain('EXPECTED_REPOSITORY_URL');

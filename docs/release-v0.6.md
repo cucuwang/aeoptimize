@@ -1,6 +1,6 @@
 # v0.6 release and rollback guide
 
-Version 0.6.0 establishes the evidence-bounded scoring, packaging, and GitHub Action contracts. It is not released until npm, the Git tag, and the GitHub Release are each created and read back independently.
+Version 0.6.1 hardens the v0.6 evidence-bounded scoring, packaging, and GitHub Action contracts. It is not released until npm, the Git tag, and the GitHub Release are each created and read back independently.
 
 ## Release acceptance
 
@@ -19,23 +19,15 @@ Publishing, tagging, creating a GitHub Release, changing npm dist-tags, and depr
 
 ## Release notes
 
-### Evidence-bounded readiness scoring
+### Artifact-bound release verification
 
-- Reframe the score as deterministic content readiness rather than a prediction of ranking or AI citation.
-- Treat FAQ structure and `llms.txt` as optional, zero-point signals.
-- Remove exact-one-H1 and fixed meta-description-length assumptions.
-- Flag unsourced quantitative claims instead of rewarding more numbers.
-- Publish a versioned fixture corpus with positive, negative, and false-positive boundaries for every scored rule.
+- Build the candidate from a clean worktree and install all three CLI aliases from the exact tarball whose SHA-256 is recorded.
+- Require byte-identical candidate manifests from Node.js 22 and 24 before the release can proceed.
+- Bind the public verifier's CLI smoke checks to the downloaded, hash-verified npm tarball.
+- Fail closed when a CLI alias, tag target, repository identity, or GitHub Release state does not match.
+- Exercise every v0.6 rule fixture through the real HTML parser boundary.
 
-### Reproducible automation
-
-- Support maintained Node.js 22 and 24 lines.
-- Keep `aeoptimize`, `aeo`, and `aeo-cli` in the packed npm manifest.
-- Add an advisory-by-default GitHub Action with explicit blocking mode and stable JSON outputs.
-- Add a copyable end-to-end Action sample and release-time contract checks.
-- Refresh dependencies and require zero high or critical audit findings at release time.
-
-No ranking, traffic, indexing, rich-result, AI Overview, or citation outcome is claimed by this release.
+No scoring rule, rule weight, JSON field, Action input, or Action output changes in this patch. No ranking, traffic, indexing, rich-result, AI Overview, or citation outcome is claimed by this release.
 
 ## Publication readback
 
@@ -43,16 +35,16 @@ After an authorized npm publication:
 
 ```bash
 npm view aeoptimize version dist-tags --json
-npm view aeoptimize@0.6.0 version gitHead repository homepage bugs dist --json
-consumer_root=$(mktemp -d "${TMPDIR:-/tmp}/aeoptimize-v0.6-consumer.XXXXXX")
-npm install --prefix "$consumer_root" aeoptimize@0.6.0
+npm view aeoptimize@0.6.1 version gitHead repository homepage bugs dist --json
+consumer_root=$(mktemp -d "${TMPDIR:-/tmp}/aeoptimize-v0.6.1-consumer.XXXXXX")
+npm install --prefix "$consumer_root" aeoptimize@0.6.1
 "$consumer_root/node_modules/.bin/aeoptimize" --version
 "$consumer_root/node_modules/.bin/aeo" --version
 "$consumer_root/node_modules/.bin/aeo-cli" --version
 rm -rf -- "$consumer_root"
 ```
 
-After separately authorized tag and GitHub Release creation, verify that `v0.6.0` points to the tested release commit and that the Release is published rather than draft or prerelease.
+After separately authorized tag and GitHub Release creation, verify that `v0.6.1` points to the tested release commit and that the Release is published rather than draft or prerelease.
 
 The fail-closed public verifier checks npm `latest`, the exact version, public repository identity, the downloaded tarball SHA-256, all three installed CLI aliases, the tag target, and the published GitHub Release. The tarball hash is the required artifact-identity gate. If npm exposes `gitHead`, it must match the expected release commit; absence is reported as informational because npm's publish contract guarantees tarball integrity but does not guarantee that metadata field.
 
@@ -64,11 +56,11 @@ bash scripts/verify-release-v0.6.sh <verified-release-commit> <verified-package-
 
 An npm dist-tag rollback changes what `npm install aeoptimize` selects; it does not remove exact-version installs. Never silently move an existing Git tag to different code.
 
-If npm 0.6.0 is unsuitable before a corrective release is available, request separate authorization for each mutation, then:
+If npm 0.6.1 is unsuitable before a corrective release is available, request separate authorization for each mutation, then:
 
 ```bash
-npm dist-tag add aeoptimize@0.5.3 latest
-npm deprecate aeoptimize@0.6.0 "Use 0.5.3 until the corrective release is available."
+npm dist-tag add aeoptimize@0.6.0 latest
+npm deprecate aeoptimize@0.6.1 "Use 0.6.0 until the corrective release is available."
 ```
 
-Mark the GitHub Release with the same warning. Preserve the `v0.6.0` tag as evidence of what was published, fix forward in 0.6.1, rerun the complete release acceptance suite, and only then move npm `latest` to the corrective version.
+Mark the GitHub Release with the same warning. Preserve the `v0.6.1` tag as evidence of what was published, fix forward in 0.6.2, rerun the complete release acceptance suite, and only then move npm `latest` to the corrective version.
