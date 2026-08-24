@@ -2,6 +2,14 @@
 
 All notable user-visible changes will be documented here. The project follows Semantic Versioning after the v0.6 evidence baseline is released.
 
+## Unreleased
+
+### Fixed
+
+- Bound public CLI verification to the downloaded tarball that passed SHA-256 verification.
+- Added an executable clean-worktree release candidate gate and cross-Node package reproducibility check.
+- Exercised the public rule corpus across the HTML parser boundary and strengthened release verifier failure tests.
+
 ## 0.6.0
 
 ### Changed

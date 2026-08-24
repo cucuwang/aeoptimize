@@ -126,14 +126,26 @@ export const ruleFixtureCorpus: Record<string, RuleFixtureSet> = {
     negative: {
       purpose: 'A majority of dangling pronoun or transition openings triggers a review finding.',
       document: {
-        paragraphs: ['This is important.', 'They require context.', 'However, it varies.', 'The release is versioned.', 'The report is public.'],
+        paragraphs: [
+          'This is important for the release.',
+          'They require additional context.',
+          'However, it varies by project.',
+          'The release is versioned for users.',
+          'The report is publicly available.',
+        ],
       },
       expected: { score: 3, issues: 1, suggestions: 1 },
     },
     boundary: {
       purpose: 'Exactly twenty percent dangling openings is the non-penalized ratio boundary.',
       document: {
-        paragraphs: ['This needs context.', 'The package is versioned.', 'The Action is advisory.', 'The report is stable.', 'The fixture is public.'],
+        paragraphs: [
+          'This needs context for the reader.',
+          'The package is explicitly versioned.',
+          'The Action is advisory by default.',
+          'The report remains stable for automation.',
+          'The fixture is publicly reviewable.',
+        ],
       },
       expected: { score: 8, issues: 0, suggestions: 1 },
     },
