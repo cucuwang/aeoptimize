@@ -64,7 +64,7 @@ node -e "const r=require('./aeoptimize-report.json'); process.exit(r.overall.tot
 The v0.6 GitHub Action is advisory by default. It reports findings without blocking the workflow:
 
 ```yaml
-- uses: cucuwang/aeoptimize@v0.6.1
+- uses: cucuwang/aeoptimize@v0.6.2
   with:
     path: dist
 ```
@@ -72,7 +72,7 @@ The v0.6 GitHub Action is advisory by default. It reports findings without block
 Projects can explicitly choose blocking mode after accepting a baseline:
 
 ```yaml
-- uses: cucuwang/aeoptimize@v0.6.1
+- uses: cucuwang/aeoptimize@v0.6.2
   with:
     path: dist
     fail-on-low-score: 'true'

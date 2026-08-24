@@ -1,6 +1,6 @@
 {
   "name": "aeoptimize",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Deterministic content-readiness lint for static websites and documentation",
   "type": "module",
   "main": "./dist/core/index.js",
@@ -21,6 +21,7 @@
     "fixtures/",
     "examples/github-action-sample/",
     "scripts/verify-release-candidate.sh",
+    "scripts/verify-publish-source.sh",
     "scripts/verify-release-v0.6.sh",
     ".claude-plugin/",
     "docs/methodology.md",
@@ -39,7 +40,7 @@
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run release:check"
+    "prepublishOnly": "npm run release:check && bash scripts/verify-publish-source.sh"
   },
   "keywords": [
     "aeo",
