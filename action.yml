@@ -1,5 +1,6 @@
 name: aeoptimize Content Readiness Check
 description: Run the deterministic aeoptimize readiness lint against a build directory
+author: Te-Shu Wang
 branding:
   icon: search
   color: blue

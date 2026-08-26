@@ -79,7 +79,7 @@ npx aeoptimize scan ./dist --dir --json > aeoptimize-report.json
 node -e "const r=require('./aeoptimize-report.json'); process.exit(r.overall.total < 60 ? 1 : 0)"
 ```
 
-The v0.6 GitHub Action is advisory by default. It reports findings without blocking the workflow:
+The v0.6 GitHub Action is advisory by default. Consume it from the repository pin until it appears on GitHub Marketplace (Marketplace listing is a checkbox on a GitHub Release, not an extra package). It reports findings without blocking the workflow:
 
 ```yaml
 - uses: cucuwang/aeoptimize@v0.6.2
@@ -163,7 +163,7 @@ The hook checks staged `.html`, `.htm`, `.md`, and `.mdx` content. Review the ba
 claude plugin marketplace add cucuwang/aeoptimize
 ```
 
-Or install the same reusable skills through the cross-agent Agent Skills CLI:
+Or install the same reusable skills through the cross-agent Agent Skills CLI (skills.sh indexes installs from this command; there is no separate submit form):
 
 ```bash
 npx skills add cucuwang/aeoptimize
