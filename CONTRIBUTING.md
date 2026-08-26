@@ -15,6 +15,12 @@ npm audit --audit-level=high
 
 Do not commit `node_modules`, `dist`, package tarballs, credentials, or reports containing private URLs.
 
+## First contributions
+
+Start from an issue labeled `good first issue`. Comment on the issue before opening a pull request if the scope is unclear.
+
+For scoring-rule work, follow [docs/methodology.md](docs/methodology.md): every rule change needs an evidence class plus positive, negative, and false-positive fixtures. Pull requests that claim ranking, citation, or AI-visibility outcomes will not be merged.
+
 ## Pull requests
 
 Keep each pull request focused. Include:
